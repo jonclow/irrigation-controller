@@ -28,7 +28,6 @@ exports.toggleValve = async function (req, res) {
   });
 
   await req.app.set('valve_state', appValveState);
-  console.log('ValveController.toggleValve - Valve State: ', await req.app.get('valve_state'));
   return res.send(_.map(appValveState, (v) => _.pick(v, ['id', 'name', 'status'])));
 }
 

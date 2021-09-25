@@ -31,8 +31,6 @@ const ValveService = {
         status: valve.pinControl.readSync(),
       };
     }));
-
-    console.log('ValveService.turnOffValveTimeout - Valve State: ', await app.get('valve_state'));
   },
 };
 

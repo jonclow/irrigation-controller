@@ -20,6 +20,5 @@ app.get('*', (req, res) => {
 
 app.set('valve_state', require('./api/services/ValveService').initValveControl());
 app.listen(port, () => {
-  console.log(`----------------- Express up. Port: ${chalk.green(port)} --------------------------`);
-  console.log('----------------- Valve State: ', app.get('valve_state'));
+  console.log(`----------------- Express up. Port: ${chalk.green(port)} -----------------`);
 });

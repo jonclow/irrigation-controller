@@ -75,7 +75,7 @@ class App extends React.Component {
                 <Schedule />
               </Route>
               <Route path="/">
-                <Home />
+                <Home valves={valves} />
               </Route>
             </Switch>
           </Router>
