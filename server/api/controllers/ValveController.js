@@ -7,7 +7,7 @@ exports.toggleValve = async function (req, res) {
 
   if (targetValve.pinControl.readSync() === 0) {
     targetValve.pinControl.writeSync(1);
-    targetValve.timeOutObject = setTimeout(ValveService.turnOffValveTimeout, req.body.duration * 1000, [req.body.id, req.app]);
+    targetValve.timeOutObject = setTimeout(ValveService.turnOffValveTimeout, req.body.duration * 60000, req.body.id, req.app);
   } else {
     targetValve.pinControl.writeSync(0);
     if (_.has(targetValve, 'timeOutObject')) {

@@ -9,7 +9,7 @@
     "build": "cd client && npm install && npm run build"
   },
   "engines": {
-    "node": "16.7.0"
+    "node": "16.10.0"
   },
   "author": "",
   "license": "ISC",
