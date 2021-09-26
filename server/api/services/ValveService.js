@@ -5,9 +5,10 @@ const ValveService = {
     const GPIO = require('onoff').Gpio;
 
     return _.map(require('../config/valve'), (valve) => {
+      const pinControl = new GPIO(valve.gpio_pin, 'high');
       return {
         ...valve,
-        pinControl: new GPIO(valve.gpio_pin, 'out'),
+        pinControl: pinControl,
         status: 0,
       };
     });
