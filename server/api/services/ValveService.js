@@ -5,8 +5,7 @@ const ValveService = {
     const GPIO = require('onoff').Gpio;
 
     return _.map(require('../config/valve'), (valve) => {
-      const pinControl = new GPIO(valve.gpio_pin, 'out');
-      pinControl.writeSync(0);
+      const pinControl = new GPIO(valve.gpio_pin, 'low');
       return {
         ...valve,
         pinControl: pinControl,
