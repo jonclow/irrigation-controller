@@ -5,11 +5,11 @@ exports.toggleValve = async function (req, res) {
   let appValveState = await req.app.get('valve_state');
   const targetValve = _.find(appValveState, { id: req.body.id });
 
-  if (targetValve.pinControl.readSync() === 1) {
-    targetValve.pinControl.writeSync(0);
+  if (targetValve.pinControl.readSync() === 0) {
+    targetValve.pinControl.writeSync(1);
     targetValve.timeOutObject = setTimeout(ValveService.turnOffValveTimeout, req.body.duration * 60000, req.body.id, req.app);
   } else {
-    targetValve.pinControl.writeSync(1);
+    targetValve.pinControl.writeSync(0);
     if (_.has(targetValve, 'timeOutObject')) {
       clearTimeout(targetValve.timeOutObject);
       delete targetValve.timeOutObject;

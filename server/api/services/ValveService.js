@@ -23,8 +23,8 @@ const ValveService = {
     return _.map(require('../config/valve'), (valve) => {
       return {
         ...valve,
-        pinControl: new GPIO(valve.gpio_pin, 'high'),
-        status: 1,
+        pinControl: new GPIO(valve.gpio_pin, 'out'),
+        status: 0,
       };
     });
 
@@ -36,14 +36,10 @@ const ValveService = {
         return valve;
       }
 
-      if (valve.pinControl.readSync() === 0) {
-        valve.pinControl.writeSync(1);
-      }
-
+      valve.pinControl.writeSync(0);
       if (_.has(valve, 'timeOutObject')) {
         delete valve.timeOutObject;
       }
-
       return {
         ...valve,
         status: valve.pinControl.readSync(),

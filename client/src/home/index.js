@@ -13,7 +13,7 @@ class Home extends React.Component {
     return (
       <ValveState
         name={value.name}
-        colour={value.status === 0 ? 'Coral' : 'Aquamarine'}
+        colour={value.status === 1 ? 'Coral' : 'Aquamarine'}
         status={value.status}
       />
     );
