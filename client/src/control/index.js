@@ -38,7 +38,7 @@ class Control extends React.Component {
     return (
       <Valve
         name={value.name}
-        colour={value.status === 1 ? 'Coral' : 'Aquamarine'}
+        colour={value.status === 0 ? 'Coral' : 'Aquamarine'}
         onClick={() => this.handleClick(value.id)}
       />
     );
