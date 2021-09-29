@@ -4,7 +4,7 @@ const ValveService = {
   gracefulShutdown: async function (app) {
     _.each(await app.get('valve_state'), (valve) => {
       // Turn off
-      valve.pinControl.writeSync(0);
+      valve.pinControl.writeSync(1);
       // Release GPIO resources
       valve.pinControl.unexport();
       // Cleanup any timers
