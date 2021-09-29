@@ -1,6 +1,22 @@
 const _ = require('lodash');
 
 const ValveService = {
+  gracefulShutdown: async function (app) {
+    _.each(await app.get('valve_state'), (valve) => {
+      // Turn off
+      valve.pinControl.writeSync(0);
+      // Release GPIO resources
+      valve.pinControl.unexport();
+      // Cleanup any timers
+      if (_.has(valve, 'timeOutObject')) {
+        clearTimeout(valve.timeOutObject);
+        delete valve.timeOutObject;
+      }
+    });
+
+    console.log('ValveService.gracefulShutdown - Success');
+  },
+
   initValveControl: async function () {
     const GPIO = require('onoff').Gpio;
 
