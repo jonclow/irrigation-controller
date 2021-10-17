@@ -31,7 +31,7 @@ const ValveService = {
   },
 
   turnOffValveTimeout: async function(valveID, app) {
-    await app.set('valve_state', _.map(await app.get('valve_state'), (valve) => {
+    const valveState = _.map(await app.get('valve_state'), (valve) => {
       if (valve.id !== valveID) {
         return valve;
       }
@@ -48,7 +48,10 @@ const ValveService = {
         ...valve,
         status: valve.pinControl.readSync(),
       };
-    }));
+    });
+
+    await app.set('valve_state', valveState);
+    await app.get('socket').emit('valve-update', _.map(valveState, (valve) => _.pick(valve, ['id', 'name', 'status'])));
   },
 };
 

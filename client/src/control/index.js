@@ -1,6 +1,8 @@
 import React from 'react';
 import Valve from './valve';
 import './control.css';
+import { SocketContext } from "../socket-context";
+
 class Control extends React.Component {
   constructor(props) {
     super(props);
@@ -8,6 +10,15 @@ class Control extends React.Component {
       valves: props.valves,
       duration: 10,
     };
+  }
+
+  componentDidMount() {
+    const socket = this.context;
+    socket.on('valve-update', (update) => {
+      this.setState({
+        valves: update,
+      });
+    });
   }
 
   handleClick(id) {
@@ -52,5 +63,7 @@ class Control extends React.Component {
     );
   }
 }
+
+Control.contextType = SocketContext;
 
 export default Control;

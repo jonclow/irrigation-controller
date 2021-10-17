@@ -1,12 +1,23 @@
 import React from 'react';
-import ValveState from "./valveState";
+import ValveState from './valveState';
 import './home.css';
+import { SocketContext } from "../socket-context";
+
 class Home extends React.Component {
   constructor(props) {
     super(props);
     this.state = {
       valves: props.valves,
     };
+  }
+
+  componentDidMount() {
+    let socket = this.context;
+    socket.on('valve-update', (update) => {
+      this.setState({
+        valves: update,
+      });
+    });
   }
 
   renderValveState(value) {
@@ -28,5 +39,7 @@ class Home extends React.Component {
     );
   }
 }
+
+Home.contextType = SocketContext;
 
 export default Home;
