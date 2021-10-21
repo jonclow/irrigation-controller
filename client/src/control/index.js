@@ -1,13 +1,16 @@
 import React from 'react';
-import Valve from './valve';
 import './control.css';
 import { SocketContext } from "../socket-context";
+import DurationSlider from "../shared/durationSlider";
+import Valve from './valve';
 
 class Control extends React.Component {
   constructor(props) {
     super(props);
     this.state = {
-      valves: props.valves,
+      error: null,
+      isLoaded: false,
+      valves: [],
       duration: 10,
     };
   }
@@ -19,6 +22,23 @@ class Control extends React.Component {
         valves: update,
       });
     });
+
+    fetch('/valve/getValveState')
+      .then(res => res.json())
+      .then(
+        (result) => {
+          this.setState({
+            isLoaded: true,
+            valves: result
+          });
+        },
+        (error) => {
+          this.setState({
+            isLoaded: true,
+            error: error,
+          });
+        }
+      );
   }
 
   handleClick(id) {
@@ -45,22 +65,34 @@ class Control extends React.Component {
       );
   }
 
+  durationSliderChange = (e) => this.setState({
+    duration: e.target.value,
+  });
+
   renderValveControl(value) {
     return (
       <Valve
         name={value.name}
-        colour={value.status === 0 ? 'Coral' : 'Aquamarine'}
+        colour={value.status === 0 ? 'DarkGreen' : 'Coral'}
+        status={value.status}
         onClick={() => this.handleClick(value.id)}
       />
     );
   }
 
   render() {
-    return (
-      <div>
-        {this.state.valves.map((value) => this.renderValveControl(value))}
-      </div>
-    );
+    if (this.state.error) {
+      return <div>Error: {this.state.error.message}</div>;
+    } else if (!this.state.isLoaded) {
+      return <div>Loading...</div>;
+    } else {
+      return (
+        <div>
+          <DurationSlider onChange={this.durationSliderChange} duration={this.state.duration} />
+          {this.state.valves.map((value) => this.renderValveControl(value))}
+        </div>
+      );
+    }
   }
 }
 
