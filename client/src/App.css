@@ -20,12 +20,15 @@
   color: white;
 }
 
+.App-header ul {
+  padding-left: 10px;
+}
+
 .App-header li a {
   text-decoration: none;
 }
 
 .App-logo {
   height: 10vmin;
-  margin-left: 40px;
   pointer-events: none;
 }

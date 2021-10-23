@@ -12,9 +12,6 @@ import Control from "./control";
 import { SocketContext, socket } from './socket-context';
 
 class App extends React.Component {
-  constructor(props) {
-    super(props);
-  }
 
   render() {
     return (
