@@ -1,11 +1,14 @@
+require('dotenv').config();
 const http = require('http');
 const express = require('express');
 const { Server } = require('socket.io');
 const chalk = require('chalk');
 const bodyParser = require('body-parser');
 const path = require('path');
+const cron = require('node-cron');
 const { createTerminus } = require('@godaddy/terminus');
 const ValveService = require('./api/services/ValveService');
+const ScheduleService = require('./api/services/ScheduleService');
 const scheduleRouter = require('./api/routes/scheduleRouter');
 const valveRouter = require('./api/routes/valveRouter');
 
@@ -27,9 +30,10 @@ app.set('valve_state', ValveService.initValveControl());
 app.set('socket', socket);
 
 function onSignal () {
-  console.log('Starting cleanup...');
+  console.log(chalk.blue('Starting cleanup...'));
   return Promise.all([
     ValveService.gracefulShutdown(app),
+    // ScheduleService.gracefulShutdown(),
   ]);
 }
 
@@ -38,11 +42,14 @@ createTerminus(server, {
   onSignal,
 });
 
-socket.on('connection', (socket) => {
+socket.on('connection', () => {
   console.log('Client connected');
 });
 
+cron.schedule('* * * * *', () => ScheduleService.scheduleCheckAndRun(app));
+
 const port = process.env.PORT || 3001;
-server.listen(port, () => {
+
+server.listen(port, async () => {
   console.log(`----------------- Express up. Port: ${chalk.green(port)} -----------------`);
 });

@@ -2,32 +2,7 @@ const _ = require('lodash');
 const ValveService = require('../services/ValveService');
 
 exports.toggleValve = async function (req, res) {
-  let appValveState = await req.app.get('valve_state');
-  const targetValve = _.find(appValveState, { id: req.body.id });
-
-  if (targetValve.pinControl.readSync() === 1) {
-    targetValve.pinControl.writeSync(0);
-    targetValve.timeOutObject = setTimeout(ValveService.turnOffValveTimeout, req.body.duration * 60000, req.body.id, req.app);
-  } else {
-    targetValve.pinControl.writeSync(1);
-    if (_.has(targetValve, 'timeOutObject')) {
-      clearTimeout(targetValve.timeOutObject);
-      delete targetValve.timeOutObject;
-    }
-  }
-
-  appValveState = _.map(appValveState, (valve) => {
-    if (valve.id !== req.body.id) {
-      return valve;
-    }
-
-    return {
-      ...valve,
-      status: targetValve.pinControl.readSync(),
-    };
-  });
-
-  await req.app.set('valve_state', appValveState);
+  const appValveState = await ValveService.toggleValves(req.app, [req.body.id], req.body.duration);
   return res.send(_.map(appValveState, (v) => _.pick(v, ['id', 'name', 'status'])));
 }
 

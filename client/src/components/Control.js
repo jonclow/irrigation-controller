@@ -1,8 +1,8 @@
 import React from 'react';
-import './control.css';
+import '../css/base.css';
 import { SocketContext } from "../socket-context";
-import DurationSlider from "../shared/durationSlider";
-import Valve from './valve';
+import DurationSlider from "./DurationSlider";
+import Valve from './Valve';
 
 class Control extends React.Component {
   constructor(props) {
@@ -72,6 +72,7 @@ class Control extends React.Component {
   renderValveControl(value) {
     return (
       <Valve
+        key={value.id}
         name={value.name}
         colour={value.status === 0 ? 'DarkGreen' : 'Coral'}
         status={value.status}
