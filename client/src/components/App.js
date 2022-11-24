@@ -17,7 +17,7 @@ class App extends React.Component {
     return (
       <div className="App">
         <Router>
-          <header className="App-header">
+          <header className="App-header bg-slate-600/75">
             <img src={water_drop} className="App-logo" alt="logo"/>
             <nav>
               <ul>

@@ -6,9 +6,8 @@ import {
   Switch, useHistory,
   useRouteMatch
 } from "react-router-dom";
-import EditSchedule from "./EditSchedule";
-import AddNewSchedule from "./AddNewSchedule";
 import _ from 'lodash';
+import AddOrUpdateSchedule from "./AddOrUpdateSchedule";
 
 function Schedule() {
 
@@ -18,6 +17,16 @@ function Schedule() {
 
   const { path, url } = useRouteMatch();
   let history = useHistory();
+
+  const daysOfWeek = {
+    0: 'Sunday',
+    1: 'Monday',
+    2: 'Tuesday',
+    3: 'Wednesday',
+    4: 'Thursday',
+    5: 'Friday',
+    6: 'Saturday'
+  };
 
   useEffect(() => {
     setIsLoaded(false);
@@ -120,46 +129,48 @@ function Schedule() {
   } else {
     return (
       <div>
-        <table>
+
+        <table className="table-auto border-separate w-5/6 overflow-visible ml-20 my-5">
           <thead>
           <tr>
-            <th>Active</th>
-            <th>Name</th>
-            <th>Start</th>
-            <th>Days</th>
-            <th>Valves</th>
-            <th>Duration</th>
-            <th>Edit</th>
+            <th className="bg-slate-400 border border-slate-600">Active</th>
+            <th className="bg-slate-400 border border-slate-600">Name</th>
+            <th className="bg-slate-400 border border-slate-600">Start</th>
+            <th className="bg-slate-400 border border-slate-600">Days</th>
+            <th className="bg-slate-400 border border-slate-600">Valves</th>
+            <th className="bg-slate-400 border border-slate-600">Duration</th>
+            <th></th>
           </tr>
           </thead>
           <tbody>
           {schedules.map((schedule) => (
-            <tr>
-              <td>{schedule.active ? <span>&#x2714;</span> : 'X'}</td>
-              <td>{schedule.name}</td>
-              <td>{schedule.start}</td>
-              <td>{schedule.days}</td>
-              <td>{schedule.valves}</td>
-              <td>{schedule.duration}</td>
-              <td><Link to={`${url}/${schedule.id}`}>Edit</Link></td>
+            <tr key={schedule.id}>
+              <td className="border border-slate-700">{schedule.active ? <span>&#x2714;</span> : 'X'}</td>
+              <td className="border border-slate-700">{schedule.name}</td>
+              <td className="border border-slate-700">{schedule.start}</td>
+              <td className="border border-slate-700">{_.map(schedule.days, (dayInt) => daysOfWeek[dayInt]).join(', ')}</td>
+              <td className="border border-slate-700">{schedule.valves}</td>
+              <td className="border border-slate-700">{schedule.duration}</td>
+              <td className="border border-slate-600 bg-slate-400 hover:bg-slate-600"><button><Link to={`${url}/${schedule.id}`}>Edit</Link></button></td>
             </tr>
           ))}
+          <tr key={'new'}>
+            <td></td>
+            <td></td>
+            <td></td>
+            <td></td>
+            <td></td>
+            <td></td>
+            <td className="border border-slate-600 bg-slate-400 hover:bg-slate-600"><Link to={`${url}/new`}><span>&#10133;</span></Link></td>
+          </tr>
           </tbody>
         </table>
 
-        <button>
-          <Link to={`${url}/new`}>Add New</Link>
-        </button>
-        <button onClick={deleteAllSchedules}>Clear All</button>
+        <button onClick={deleteAllSchedules} className="block ml-20 w-1/6 mt-5 rounded-md drop-shadow-md hover:drop-shadow-xl shadow-slate-700 bg-red-600/75 hover:bg-red-600">Clear All</button>
 
         <Switch>
-          <Route exact path={`${path}/new`}>
-            <AddNewSchedule
-              handleScheduleSaveClick={handleScheduleSaveClick}
-            />
-          </Route>
           <Route path={`${path}/:scheduleID`}>
-            <EditSchedule
+            <AddOrUpdateSchedule
               deleteSchedule={handleDeleteScheduleClick}
               handleScheduleSaveClick={handleScheduleSaveClick}
               currentSchedules={schedules}
