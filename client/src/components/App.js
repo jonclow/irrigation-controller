@@ -7,12 +7,18 @@ import {
   Route,
   Switch
 } from "react-router-dom";
-import { SocketContext, socket } from '../socket-context';
+import io from "socket.io-client";
 import Schedule from "./Schedule";
 import NotFound from "./NotFound";
 import Control from "./Control";
 
 class App extends React.Component {
+
+  constructor(props) {
+    super(props);
+    this.socket = io();
+  }
+
   render() {
     return (
       <div className="App">
@@ -36,9 +42,9 @@ class App extends React.Component {
               <Schedule />
             </Route>
             <Route path="/">
-              <SocketContext.Provider value={socket}>
-                <Control />
-              </SocketContext.Provider>
+              <Control
+                socket={this.socket}
+              />
             </Route>
             <Route component={NotFound}/>
           </Switch>

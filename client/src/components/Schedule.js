@@ -14,10 +14,11 @@ function Schedule() {
   const [error, setError] = useState(null);
   const [isLoaded, setIsLoaded] = useState(false);
   const [schedules, setSchedules] = useState([]);
+  const [valves, setValves] = useState([]);
 
   const { path, url } = useRouteMatch();
   let history = useHistory();
-
+  const valveConfig = _.zipObject(_.map(valves, 'id'), _.map(valves, 'name'));
   const daysOfWeek = {
     0: 'Sunday',
     1: 'Monday',
@@ -31,12 +32,25 @@ function Schedule() {
   useEffect(() => {
     setIsLoaded(false);
 
-    fetch('/schedule/getAllSchedules', { method: 'GET' })
+    fetch('/schedule/getAllSchedules')
       .then(res => res.json())
       .then(
         (result) => {
           setIsLoaded(true);
           setSchedules(result);
+        },
+        (error) => {
+          setIsLoaded(true);
+          setError(error);
+        }
+      );
+
+    fetch('/valve/getValveState')
+      .then(res => res.json())
+      .then(
+        (result) => {
+          setIsLoaded(true);
+          setValves(result);
         },
         (error) => {
           setIsLoaded(true);
@@ -149,7 +163,7 @@ function Schedule() {
               <td className="border border-slate-700">{schedule.name}</td>
               <td className="border border-slate-700">{schedule.start}</td>
               <td className="border border-slate-700">{_.map(schedule.days, (dayInt) => daysOfWeek[dayInt]).join(', ')}</td>
-              <td className="border border-slate-700">{schedule.valves}</td>
+              <td className="border border-slate-700">{_.map(schedule.valves, (valveID) => valveConfig[valveID]).join(', ')}</td>
               <td className="border border-slate-700">{schedule.duration}</td>
               <td className="border border-slate-600 bg-slate-400 hover:bg-slate-600"><button><Link to={`${url}/${schedule.id}`}>Edit</Link></button></td>
             </tr>

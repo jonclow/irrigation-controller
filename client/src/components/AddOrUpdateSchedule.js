@@ -6,8 +6,6 @@ function AddOrUpdateSchedule({ currentSchedules, handleScheduleSaveClick, delete
   let history = useHistory();
   let { scheduleID } = useParams();
 
-  console.log('----------------------------------    ', scheduleID);
-
   scheduleID = scheduleID === 'new' ? scheduleID : parseInt(scheduleID, 10);
   const currentSchedule = currentSchedules.find(sched => sched.id === scheduleID) || {};
 

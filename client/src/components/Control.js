@@ -1,109 +1,91 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import '../css/base.css';
-import { SocketContext } from "../socket-context";
 import DurationSlider from "./DurationSlider";
 import Valve from './Valve';
 import { clsx } from 'clsx';
 
-class Control extends React.Component {
-  constructor(props) {
-    super(props);
-    this.state = {
-      error: null,
-      isLoaded: false,
-      valves: [],
-      duration: 10,
-    };
-  }
+function Control({ socket }) {
+  const [error, setError] = useState(null);
+  const [isLoaded, setIsLoaded] = useState(false);
+  const [valves, setValves] = useState([]);
+  const [duration, setDuration] = useState(10);
 
-  componentDidMount() {
-    const socket = this.context;
-    socket.on('valve-update', (update) => {
-      this.setState({
-        valves: update,
-      });
-    });
-
+  useEffect(() => {
     fetch('/valve/getValveState')
       .then(res => res.json())
       .then(
         (result) => {
-          this.setState({
-            isLoaded: true,
-            valves: result
-          });
+          setIsLoaded(true);
+          setValves(result);
         },
         (error) => {
-          this.setState({
-            isLoaded: true,
-            error: error,
-          });
+          setIsLoaded(true);
+          setError(error);
         }
       );
-  }
 
-  handleClick(id) {
+    socket.on('valve-update', (update) => {
+      setValves(update);
+    });
+
+  }, []);
+
+  const toggleValveClick = (id) => {
+    setIsLoaded(false);
+
     fetch('/valve/toggleValve', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
         id: id,
-        duration: this.state.duration,
+        duration: duration,
       })
     })
       .then(res => res.json())
       .then(
         (result) => {
-          this.setState({
-            valves: result
-          });
+          setValves(result);
+          setIsLoaded(true);
         },
         (error) => {
-          this.setState({
-            error: error,
-          });
+          setError(error);
+          setIsLoaded(true);
         }
       );
   }
 
-  durationSliderChange = (e) => this.setState({
-    duration: e.target.value,
-  });
+  const durationSliderChange = (e) => setDuration(e.target.value);
 
-  renderValveControl(value) {
+  const renderValveControl = (value) => {
     return (
       <Valve
         key={value.id}
         name={value.name}
         status={value.status}
-        onClick={() => this.handleClick(value.id)}
+        onClick={() => toggleValveClick(value.id)}
       />
     );
   }
 
-  render() {
-    if (this.state.error) {
-      return <div>Error: {this.state.error.message}</div>;
-    } else if (!this.state.isLoaded) {
-      return <div>Loading...</div>;
-    } else {
-      return (
-        <div>
-          <DurationSlider onChange={this.durationSliderChange} duration={this.state.duration} />
-          <div className={clsx(
-            'w-6/6 mx-5 grid gap-4',
-            this.state.valves.length <=2 && 'grid-cols-2 grid-rows-1',
-            this.state.valves.length <= 4 && 'grid-cols-2 grid-rows-2',
-            this.state.valves.length > 4 && 'grid-cols-3 grid-rows-4'
-          )}>
-            {this.state.valves.map((value) => this.renderValveControl(value))}
-          </div>
+  if (error) {
+    return (<div>Error: {error.message}</div>);
+  } else if (!isLoaded) {
+    return (<div>Loading...</div>);
+  } else {
+    return (
+      <div>
+        <DurationSlider onChange={durationSliderChange} duration={duration} />
+        <div className={clsx(
+          'w-6/6 mx-5 grid gap-4',
+          valves.length <=2 && 'grid-cols-2 grid-rows-1',
+          valves.length <= 4 && 'grid-cols-2 grid-rows-2',
+          valves.length > 4 && 'grid-cols-3 grid-rows-4'
+        )}>
+          {valves.map((value) => renderValveControl(value))}
         </div>
-      );
-    }
+      </div>
+    );
   }
 }
-
-Control.contextType = SocketContext;
 
 export default Control;
