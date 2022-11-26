@@ -5,7 +5,7 @@ import {
   BrowserRouter as Router,
   Link,
   Route,
-  Switch
+  Routes,
 } from "react-router-dom";
 import io from "socket.io-client";
 import Schedule from "./Schedule";
@@ -37,17 +37,11 @@ class App extends React.Component {
             </nav>
           </header>
 
-          <Switch>
-            <Route path="/schedule">
-              <Schedule />
-            </Route>
-            <Route path="/">
-              <Control
-                socket={this.socket}
-              />
-            </Route>
-            <Route component={NotFound}/>
-          </Switch>
+          <Routes>
+            <Route path="/schedule/*" element={<Schedule />} />
+            <Route path="/" element={<Control socket={this.socket} />} />
+            <Route element={NotFound}/>
+          </Routes>
         </Router>
       </div>
     );

@@ -28,7 +28,7 @@ function Control({ socket }) {
       setValves(update);
     });
 
-  }, []);
+  }, [socket]);
 
   const toggleValveClick = (id) => {
     setIsLoaded(false);

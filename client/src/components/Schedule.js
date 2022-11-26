@@ -3,8 +3,8 @@ import '../css/schedule.css';
 import {
   Link,
   Route,
-  Switch, useHistory,
-  useRouteMatch
+  Routes,
+  useNavigate
 } from "react-router-dom";
 import _ from 'lodash';
 import AddOrUpdateSchedule from "./AddOrUpdateSchedule";
@@ -16,8 +16,7 @@ function Schedule() {
   const [schedules, setSchedules] = useState([]);
   const [valves, setValves] = useState([]);
 
-  const { path, url } = useRouteMatch();
-  let history = useHistory();
+  let navigate = useNavigate();
   const valveConfig = _.zipObject(_.map(valves, 'id'), _.map(valves, 'name'));
   const daysOfWeek = {
     0: 'Sunday',
@@ -84,7 +83,7 @@ function Schedule() {
         (res) => {
           setIsLoaded(true);
           setSchedules(res);
-          history.push('/schedule');
+          navigate('/schedule');
         },
         (error) => {
           setIsLoaded(true);
@@ -165,7 +164,7 @@ function Schedule() {
               <td className="border border-slate-700">{_.map(schedule.days, (dayInt) => daysOfWeek[dayInt]).join(', ')}</td>
               <td className="border border-slate-700">{_.map(schedule.valves, (valveID) => valveConfig[valveID]).join(', ')}</td>
               <td className="border border-slate-700">{schedule.duration}</td>
-              <td className="border border-slate-600 bg-slate-400 hover:bg-slate-600"><button><Link to={`${url}/${schedule.id}`}>Edit</Link></button></td>
+              <td className="border border-slate-600 bg-slate-400 hover:bg-slate-600"><button><Link to={`${schedule.id}`}>Edit</Link></button></td>
             </tr>
           ))}
           <tr key={'new'}>
@@ -175,22 +174,22 @@ function Schedule() {
             <td></td>
             <td></td>
             <td></td>
-            <td className="border border-slate-600 bg-slate-400 hover:bg-slate-600"><Link to={`${url}/new`}><span>&#10133;</span></Link></td>
+            <td className="border border-slate-600 bg-slate-400 hover:bg-slate-600"><Link to={'new'}><span>&#10133;</span></Link></td>
           </tr>
           </tbody>
         </table>
 
         <button onClick={deleteAllSchedules} className="block ml-20 w-1/6 mt-5 rounded-md drop-shadow-md hover:drop-shadow-xl shadow-slate-700 bg-red-600/75 hover:bg-red-600">Clear All</button>
 
-        <Switch>
-          <Route path={`${path}/:scheduleID`}>
+        <Routes>
+          <Route path={'/:scheduleID'} element={
             <AddOrUpdateSchedule
               deleteSchedule={handleDeleteScheduleClick}
               handleScheduleSaveClick={handleScheduleSaveClick}
               currentSchedules={schedules}
-            />
-          </Route>
-        </Switch>
+            />}
+          />
+        </Routes>
 
       </div>
     );

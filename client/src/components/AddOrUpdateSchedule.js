@@ -1,21 +1,21 @@
-import { useHistory, useParams } from "react-router-dom";
+import { useNavigate, useParams } from "react-router-dom";
 import { useRef } from "react";
 
 function AddOrUpdateSchedule({ currentSchedules, handleScheduleSaveClick, deleteSchedule }) {
   const formRef = useRef(null);
-  let history = useHistory();
+  let navigate = useNavigate();
   let { scheduleID } = useParams();
 
   scheduleID = scheduleID === 'new' ? scheduleID : parseInt(scheduleID, 10);
   const currentSchedule = currentSchedules.find(sched => sched.id === scheduleID) || {};
 
   const cancelNewOrUpdate = () => {
-    history.push('/schedule');
+    navigate('/schedule');
   }
 
   const deleteScheduleClick = async () => {
     deleteSchedule(scheduleID);
-    history.push('/schedule');
+    navigate('/schedule');
   }
 
   const newOrUpdateConditionalElements = () => {
