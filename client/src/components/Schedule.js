@@ -19,13 +19,13 @@ function Schedule() {
   let navigate = useNavigate();
   const valveConfig = _.zipObject(_.map(valves, 'id'), _.map(valves, 'name'));
   const daysOfWeek = {
-    0: 'Sunday',
-    1: 'Monday',
-    2: 'Tuesday',
-    3: 'Wednesday',
-    4: 'Thursday',
-    5: 'Friday',
-    6: 'Saturday'
+    0: 'Su',
+    1: 'Mo',
+    2: 'Tu',
+    3: 'We',
+    4: 'Th',
+    5: 'Fr',
+    6: 'Sa'
   };
 
   useEffect(() => {

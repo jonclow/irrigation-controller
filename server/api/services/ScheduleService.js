@@ -8,12 +8,11 @@ const ScheduleService = {
     const async = require('async');
     const allSchedules = await this.getAllSchedules();
 
-    const schedulesToRun = _.filter(allSchedules, (sched) => {
-      return (
-        sched.days.includes((new Date()).getDay())
-        && sched.start === (new Date()).toTimeString().substring(0, 5)
-      );
-    });
+    const schedulesToRun = _.filter(allSchedules, (sched) => (
+      sched.active
+      && sched.days.includes((new Date()).getDay())
+      && sched.start === (new Date()).toTimeString().substring(0, 5)
+    ));
 
     if (_.isEmpty(schedulesToRun)) {
       return undefined;

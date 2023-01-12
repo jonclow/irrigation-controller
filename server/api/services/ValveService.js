@@ -54,21 +54,21 @@ const ValveService = {
   },
 
   initValveControl: async function () {
-    const GPIO = require('onoff').Gpio;
+    // const GPIO = require('onoff').Gpio;
+    //
+    // return _.map(require('../config/valve'), (valve) => ({
+    //   ...valve,
+    //   pinControl: new GPIO(valve.gpio_pin, 'high'),
+    //   status: 1,
+    // }));
 
-    return _.map(require('../config/valve'), (valve) => ({
-      ...valve,
-      pinControl: new GPIO(valve.gpio_pin, 'high'),
-      status: 1,
-    }));
-
-    // return _.map(require('../config/valve'), (valve) => {
-    //   return {
-    //     ...valve,
-    //     // pinControl: new GPIO(valve.gpio_pin, 'high'),
-    //     status: 1,
-    //   };
-    // });
+    return _.map(require('../config/valve'), (valve) => {
+      return {
+        ...valve,
+        // pinControl: new GPIO(valve.gpio_pin, 'high'),
+        status: 1,
+      };
+    });
 
   },
 
