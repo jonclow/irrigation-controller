@@ -8,4 +8,4 @@ then
   cd ~/irrigation-controller || exit
 fi
 
-npm install && npm run build && npm run start
+npm install && npm run start
