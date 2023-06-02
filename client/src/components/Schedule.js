@@ -15,6 +15,7 @@ function Schedule() {
   const [isLoaded, setIsLoaded] = useState(false);
   const [schedules, setSchedules] = useState([]);
   const [valves, setValves] = useState([]);
+  const BASE_URL = process.env.REACT_APP_BASE_URL;
 
   let navigate = useNavigate();
   const valveConfig = _.zipObject(_.map(valves, 'id'), _.map(valves, 'name'));
@@ -31,7 +32,7 @@ function Schedule() {
   useEffect(() => {
     setIsLoaded(false);
 
-    fetch('/schedule/getAllSchedules')
+    fetch(`${BASE_URL}/schedule/getAllSchedules`)
       .then(res => res.json())
       .then(
         (result) => {
@@ -44,7 +45,7 @@ function Schedule() {
         }
       );
 
-    fetch('/valve/getValveState')
+    fetch(`${BASE_URL}/valve/getValveState`)
       .then(res => res.json())
       .then(
         (result) => {
@@ -63,7 +64,7 @@ function Schedule() {
     setIsLoaded(false);
     const data = new FormData(event.target);
 
-    fetch('/schedule/setSchedule', {
+    fetch(`${BASE_URL}/schedule/setSchedule`, {
       method: 'PUT',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
@@ -95,7 +96,7 @@ function Schedule() {
   const deleteAllSchedules = () => {
     setIsLoaded(false);
 
-    fetch('/schedule/deleteAllSchedules', {
+    fetch(`${BASE_URL}/schedule/deleteAllSchedules`, {
       method: 'DELETE',
       headers: { 'Content-Type': 'application/json' },
     })
@@ -115,7 +116,7 @@ function Schedule() {
   const handleDeleteScheduleClick = (id) => {
     setIsLoaded(false);
 
-    fetch('/schedule/deleteSchedule', {
+    fetch(`${BASE_URL}/schedule/deleteSchedule`, {
       method: 'DELETE',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({

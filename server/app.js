@@ -3,6 +3,7 @@ const http = require('http');
 const express = require('express');
 const { Server } = require('socket.io');
 const chalk = require('chalk');
+const cors = require('cors');
 const bodyParser = require('body-parser');
 const path = require('path');
 const cron = require('node-cron');
@@ -18,13 +19,9 @@ const socket = new Server(server);
 
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
-app.use(express.static(path.resolve(__dirname, '../client/build')));
+app.use(cors());
 app.use('/schedule', scheduleRouter);
 app.use('/valve', valveRouter);
-
-app.get('*', (req, res) => {
-  res.sendFile(path.resolve(__dirname, '../client/build', 'index.html'));
-});
 
 app.set('valve_state', ValveService.initValveControl());
 app.set('socket', socket);

@@ -9,9 +9,10 @@ function Control({ socket }) {
   const [isLoaded, setIsLoaded] = useState(false);
   const [valves, setValves] = useState([]);
   const [duration, setDuration] = useState(10);
+  const BASE_URL = process.env.REACT_APP_BASE_URL;
 
   useEffect(() => {
-    fetch('/valve/getValveState')
+    fetch(`${BASE_URL}/valve/getValveState`)
       .then(res => res.json())
       .then(
         (result) => {
@@ -33,7 +34,7 @@ function Control({ socket }) {
   const toggleValveClick = (id) => {
     setIsLoaded(false);
 
-    fetch('/valve/toggleValve', {
+    fetch(`${BASE_URL}/valve/toggleValve`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
