@@ -16,7 +16,7 @@ class App extends React.Component {
 
   constructor(props) {
     super(props);
-    this.socket = io();
+    this.socket = io('http://192.168.20.59:3001');
   }
 
   render() {

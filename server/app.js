@@ -1,7 +1,6 @@
 require('dotenv').config();
 const http = require('http');
 const express = require('express');
-const { Server } = require('socket.io');
 const chalk = require('chalk');
 const cors = require('cors');
 const bodyParser = require('body-parser');
@@ -15,7 +14,12 @@ const valveRouter = require('./api/routes/valveRouter');
 
 const app = express();
 const server = http.createServer(app);
-const socket = new Server(server);
+const socket = require('socket.io')(server, {
+  cors: {
+    origin: 'http://192.168.20.54',
+    methods: ['GET', 'POST']
+  }
+});
 
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
@@ -40,7 +44,7 @@ createTerminus(server, {
 });
 
 socket.on('connection', () => {
-  console.log('Client connected');
+  console.log(chalk.yellow('Client connected'));
 });
 
 cron.schedule('* * * * *', () => ScheduleService.scheduleCheckAndRun(app));
