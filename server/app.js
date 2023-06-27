@@ -6,8 +6,12 @@ const cors = require('cors');
 const bodyParser = require('body-parser');
 const cron = require('node-cron');
 const { createTerminus } = require('@godaddy/terminus');
+const { SerialPort } = require('serialport');
+const { ReadlineParser } = require('@serialport/parser-readline');
+
 const ValveService = require('./api/services/ValveService');
 const ScheduleService = require('./api/services/ScheduleService');
+const WeatherService = require('./api/services/WeatherService');
 const scheduleRouter = require('./api/routes/scheduleRouter');
 const valveRouter = require('./api/routes/valveRouter');
 
@@ -19,6 +23,8 @@ const socket = require('socket.io')(server, {
     methods: ['GET', 'POST']
   }
 });
+const serialPort = new SerialPort({ path: '/dev/ttyUSB0', baudRate: 9600 });
+const parser = serialPort.pipe(new ReadlineParser({ delimiter: '\r\n' }));
 
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
@@ -45,6 +51,8 @@ createTerminus(server, {
 socket.on('connection', (sock) => {
   console.log(chalk.yellow(`------------ Socket Client Connected: ${sock.id}`));
 });
+serialPort.on('open', () => console.log(chalk.yellow('Serial Port Open')));
+parser.on('data', WeatherService.addWeatherReading);
 
 cron.schedule('* * * * *', () => ScheduleService.scheduleCheckAndRun(app));
 

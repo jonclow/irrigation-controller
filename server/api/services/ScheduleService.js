@@ -1,5 +1,5 @@
 const { Client } = require('pg');
-const _ = require("lodash");
+const _ = require('lodash');
 
 const ScheduleService = {
 
