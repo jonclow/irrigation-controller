@@ -23,7 +23,7 @@ const socket = require('socket.io')(server, {
     methods: ['GET', 'POST']
   }
 });
-const serialPort = new SerialPort({ path: '/dev/ttyUSB0', baudRate: 9600 });
+const serialPort = new SerialPort({ path: '/dev/ttyACM0', baudRate: 9600 });
 const parser = serialPort.pipe(new ReadlineParser({ delimiter: '\r\n' }));
 
 app.use(bodyParser.json());

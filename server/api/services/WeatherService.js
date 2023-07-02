@@ -1,14 +1,12 @@
-const { Client } = require('pg');
+
 
 const WeatherService = {
   addWeatherReading: async function (wx) {
+    const reading = JSON.parse(wx);
+    console.log('----------- Weather Reading:  ', reading);
+    const { Client } = require('pg');
     const client = new Client();
     await client.connect();
-
-    const reading = JSON.parse(wx);
-
-    console.log('----------- Weather Reading:  ', reading);
-
     await client.query(`
       INSERT INTO weather(dtg, rain, baro, air_temp, humid, solar, wind_low, wind_high, wind_mean)
       VALUES(CURRENT_TIMESTAMP, $1, $2, $3, $4, $5, $6, $7, $8)
