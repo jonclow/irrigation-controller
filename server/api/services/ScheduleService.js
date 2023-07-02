@@ -49,9 +49,6 @@ const ScheduleService = {
   },
 
   setSchedule: async function (schedule) {
-    console.log('--------- Set Schedule', {
-      schedule,
-    });
     const client = new Client();
     await client.connect();
 
@@ -68,10 +65,6 @@ const ScheduleService = {
   },
 
   updateSchedule: async function (id, schedule) {
-    console.log('--------- Update Schedule', {
-      id,
-      schedule,
-    });
     const client = new Client();
     await client.connect();
 
@@ -94,7 +87,6 @@ const ScheduleService = {
   },
 
   getAllSchedules: async function () {
-    console.log('--------- Get all schedules');
     const client = new Client();
     await client.connect();
     const rows = await this.getAllRowsHelper(client);
@@ -103,7 +95,6 @@ const ScheduleService = {
   },
 
   getAllRowsHelper: async function (client) {
-    console.log('--------- Get all rows helper');
     const { rows } = await client.query('SELECT * FROM schedule');
     return rows;
   },
