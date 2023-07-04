@@ -8,28 +8,47 @@ function Control({ socket }) {
   const [error, setError] = useState(null);
   const [isLoaded, setIsLoaded] = useState(false);
   const [valves, setValves] = useState([]);
+  const [weather, setWeather] = useState({});
   const [duration, setDuration] = useState(10);
   const BASE_URL = process.env.REACT_APP_BASE_URL;
 
-  useEffect(() => {
-    fetch(`${BASE_URL}/valve/getValveState`)
-      .then(res => res.json())
-      .then(
-        (result) => {
-          setIsLoaded(true);
-          setValves(result);
-        },
-        (error) => {
-          setIsLoaded(true);
-          setError(error);
-        }
-      );
+  socket.on('valve-update', (update) => {
+    setValves(update);
+  });
 
-    socket.on('valve-update', (update) => {
-      setValves(update);
+  socket.on('weather-update', (update) => {
+    setWeather({
+      ...weather,
+      ...update
     });
+  });
 
-  }, [socket]);
+  useEffect(() => {
+    (async () => await Promise.all([
+      fetch(`${BASE_URL}/valve/getValveState`)
+        .then(res => res.json())
+        .then(
+          (result) => {
+            setValves(result);
+          },
+          (error) => {
+            setError(error);
+          }
+        ),
+      fetch(`${BASE_URL}/weather/getBasicWeather`)
+        .then(res => res.json())
+        .then(
+          (result) => {
+            setWeather(result);
+          },
+          (error) => {
+            setError(error);
+          }
+        )
+    ]))();
+
+    setIsLoaded(true)
+  }, [BASE_URL]);
 
   const toggleValveClick = (id) => {
     setIsLoaded(false);
@@ -74,17 +93,27 @@ function Control({ socket }) {
     return (<div>Loading...</div>);
   } else {
     return (
-      <div>
-        <DurationSlider onChange={durationSliderChange} duration={duration} />
-        <div className={clsx(
-          'w-6/6 mx-5 grid gap-4',
-          valves.length <=2 && 'grid-cols-2 grid-rows-1',
-          valves.length <= 4 && 'grid-cols-2 grid-rows-2',
-          valves.length > 4 && 'grid-cols-3 grid-rows-4'
-        )}>
-          {valves.map((value) => renderValveControl(value))}
+      <>
+        <div className="grid grid-cols-3 gap-4 mb-md">
+          <div>Rain: {weather.rain} mm</div>
+          <div>Baro: {weather.baro} hPa</div>
+          <div>Temp: {weather.air_temp} C</div>
+          <div>Humid: {weather.humid} %</div>
+          <div>Solar: {weather.solar} x</div>
+          <div>Wind: {weather.wind_mean?.sp} -- {weather.wind_mean?.dir}</div>
         </div>
-      </div>
+        <div>
+          <DurationSlider onChange={durationSliderChange} duration={duration} />
+          <div className={clsx(
+            'w-6/6 mx-5 grid gap-4',
+            valves.length <=2 && 'grid-cols-2 grid-rows-1',
+            valves.length <= 4 && 'grid-cols-2 grid-rows-2',
+            valves.length > 4 && 'grid-cols-3 grid-rows-4'
+          )}>
+            {valves.map((value) => renderValveControl(value))}
+          </div>
+        </div>
+      </>
     );
   }
 }

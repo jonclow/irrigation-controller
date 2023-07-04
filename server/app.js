@@ -12,8 +12,7 @@ const { ReadlineParser } = require('@serialport/parser-readline');
 const ValveService = require('./api/services/ValveService');
 const ScheduleService = require('./api/services/ScheduleService');
 const WeatherService = require('./api/services/WeatherService');
-const scheduleRouter = require('./api/routes/scheduleRouter');
-const valveRouter = require('./api/routes/valveRouter');
+const _ = require("lodash");
 
 const app = express();
 const server = http.createServer(app);
@@ -29,8 +28,9 @@ const parser = serialPort.pipe(new ReadlineParser({ delimiter: '\r\n' }));
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
 app.use(cors());
-app.use('/schedule', scheduleRouter);
-app.use('/valve', valveRouter);
+app.use('/schedule', require('./api/routes/scheduleRouter'));
+app.use('/valve', require('./api/routes/valveRouter'));
+app.use('/weather', require('./api/routes/weatherRouter'));
 
 app.set('valve_state', ValveService.initValveControl());
 app.set('socket', socket);
@@ -43,6 +43,12 @@ function onSignal () {
   ]);
 }
 
+async function addWeatherReading(data) {
+  const reading = await WeatherService.addWeatherReading(data);
+
+  socket.emit('weather-update', reading);
+}
+
 createTerminus(server, {
   signals: ['SIGINT', 'SIGTERM'],
   onSignal,
@@ -52,7 +58,7 @@ socket.on('connection', (sock) => {
   console.log(chalk.yellow(`------------ Socket Client Connected: ${sock.id}`));
 });
 serialPort.on('open', () => console.log(chalk.yellow('Serial Port Open')));
-parser.on('data', WeatherService.addWeatherReading);
+parser.on('data', addWeatherReading);
 
 cron.schedule('* * * * *', () => ScheduleService.scheduleCheckAndRun(app));
 
