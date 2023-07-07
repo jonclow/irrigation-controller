@@ -84,6 +84,61 @@ function Control({ socket }) {
       );
   }
 
+  const getWindVector = (wind_speed) => {
+    let windimg;
+    switch (true) {
+      case wind_speed <= 2:
+        windimg = 'wind_speed/2';
+        break;
+      case wind_speed <= 7:
+        windimg = 'wind_speed/7';
+        break;
+      case wind_speed <= 12:
+        windimg = 'wind_speed/12';
+        break;
+      case wind_speed <= 17:
+        windimg = 'wind_speed/17';
+        break;
+      case wind_speed <= 22:
+        windimg = 'wind_speed/22';
+        break;
+      case wind_speed <= 27:
+        windimg = 'wind_speed/27';
+        break;
+      case wind_speed <= 32:
+        windimg = 'wind_speed/32';
+        break;
+      case wind_speed <= 37:
+        windimg = 'wind_speed/37';
+        break;
+      case wind_speed <= 42:
+        windimg = 'wind_speed/42';
+        break;
+      case wind_speed <= 47:
+        windimg = 'wind_speed/47';
+        break;
+      case wind_speed <= 52:
+        windimg = 'wind_speed/52';
+        break;
+      case wind_speed <= 57:
+        windimg = 'wind_speed/57';
+        break;
+      case wind_speed <= 62:
+        windimg = 'wind_speed/62';
+        break;
+      case wind_speed <= 67:
+        windimg = 'wind_speed/67';
+        break;
+      case wind_speed <= 72:
+        windimg = 'wind_speed/72';
+        break;
+      default:
+        windimg = 'wind_speed/2';
+    }
+
+    return windimg;
+  }
+
   const durationSliderChange = (e) => setDuration(e.target.value);
 
   const renderValveControl = (value) => {
@@ -110,8 +165,8 @@ function Control({ socket }) {
             <WeatherChip name={'baro'} value={`${weather.baro} hPa`} />
             <WeatherChip name={'air_temp'} value={`${weather.air_temp} C`} />
             <WeatherChip name={'humid'} value={`${weather.humid} %`} />
-            <WeatherChip name={'solar'} value={`${weather.solar} kWh/m2`} />
-            <WeatherChip name={'wind'} value={`${weather.wind_mean.sp} kt --> ${weather.wind_mean.dir}`} />
+            <WeatherChip name={'solar'} value={`${weather.solar}`} />
+            <WeatherChip name={getWindVector(weather.wind_mean.sp)} value={`${weather.wind_mean.sp} kt`} rot_deg={`${weather.wind_mean.dir + 90}deg`} />
           </div>
           <div>
             <DurationSlider onChange={durationSliderChange} duration={duration} />
