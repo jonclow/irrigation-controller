@@ -1,14 +1,24 @@
 import React, { useEffect, useState } from 'react';
 import '../css/base.css';
-import DurationSlider from "./DurationSlider";
+import DurationSlider from './DurationSlider';
 import Valve from './Valve';
-import { clsx } from 'clsx';
+import WeatherChip from './WeatherChip'
 
 function Control({ socket }) {
   const [error, setError] = useState(null);
   const [isLoaded, setIsLoaded] = useState(false);
   const [valves, setValves] = useState([]);
-  const [weather, setWeather] = useState({});
+  const [weather, setWeather] = useState({
+    rain: 0,
+    baro: 0,
+    air_temp: 0,
+    humid: 0,
+    solar: 0,
+    wind_mean: {
+      sp: 0,
+      dir: 0
+    }
+  });
   const [duration, setDuration] = useState(10);
   const BASE_URL = process.env.REACT_APP_BASE_URL;
 
@@ -94,23 +104,20 @@ function Control({ socket }) {
   } else {
     return (
       <>
-        <div className="grid grid-cols-3 gap-4 mb-md">
-          <div>Rain: {weather.rain} mm</div>
-          <div>Baro: {weather.baro} hPa</div>
-          <div>Temp: {weather.air_temp} C</div>
-          <div>Humid: {weather.humid} %</div>
-          <div>Solar: {weather.solar} x</div>
-          <div>Wind: {weather.wind_mean?.sp} -- {weather.wind_mean?.dir}</div>
-        </div>
-        <div>
-          <DurationSlider onChange={durationSliderChange} duration={duration} />
-          <div className={clsx(
-            'w-6/6 mx-5 grid gap-4',
-            valves.length <=2 && 'grid-cols-2 grid-rows-1',
-            valves.length <= 4 && 'grid-cols-2 grid-rows-2',
-            valves.length > 4 && 'grid-cols-3 grid-rows-4'
-          )}>
-            {valves.map((value) => renderValveControl(value))}
+        <div className="w-6/6 mx-5 mt-5">
+          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4 mb-md">
+            <WeatherChip name={'rain'} value={`${weather.rain} mm`} />
+            <WeatherChip name={'baro'} value={`${weather.baro} hPa`} />
+            <WeatherChip name={'air_temp'} value={`${weather.air_temp} C`} />
+            <WeatherChip name={'humid'} value={`${weather.humid} %`} />
+            <WeatherChip name={'solar'} value={`${weather.solar} kWh/m2`} />
+            <WeatherChip name={'wind'} value={`${weather.wind_mean.sp} kt --> ${weather.wind_mean.dir}`} />
+          </div>
+          <div>
+            <DurationSlider onChange={durationSliderChange} duration={duration} />
+            <div className={'grid grid-cols-2 xs:grid-cols-1 md:grid-cols-4 lg:grid-cols-4 gap-4'}>
+              {valves.map((value) => renderValveControl(value))}
+            </div>
           </div>
         </div>
       </>

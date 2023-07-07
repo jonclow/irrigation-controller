@@ -1,16 +1,18 @@
 import React from 'react';
 import '../css/base.css';
-import water_drop from "../assets/water_drop.svg";
+import water_drop from '../assets/water_drop.svg';
 import {
   BrowserRouter as Router,
   Link,
   Route,
   Routes,
-} from "react-router-dom";
-import io from "socket.io-client";
-import Schedule from "./Schedule";
-import NotFound from "./NotFound";
-import Control from "./Control";
+} from 'react-router-dom';
+import io from 'socket.io-client';
+import Schedule from './Schedule';
+import NotFound from './NotFound';
+import Control from './Control';
+import Weather from './Weather';
+import Footer from "./Footer";
 
 class App extends React.Component {
 
@@ -33,16 +35,21 @@ class App extends React.Component {
                 <li>
                   <Link to="/schedule">Schedule</Link>
                 </li>
+                <li>
+                  <Link to="/weather">Weather</Link>
+                </li>
               </ul>
             </nav>
           </header>
 
           <Routes>
             <Route path="/schedule/*" element={<Schedule />} />
+            <Route path="/weather/*" element={<Weather socket={this.socket} />} />
             <Route path="/" element={<Control socket={this.socket} />} />
             <Route element={NotFound}/>
           </Routes>
         </Router>
+        <Footer />
       </div>
     );
   }

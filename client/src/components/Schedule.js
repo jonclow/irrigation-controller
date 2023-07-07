@@ -57,7 +57,7 @@ function Schedule() {
           setError(error);
         }
       );
-  }, []);
+  }, [BASE_URL]);
 
   const handleScheduleSaveClick = (event) => {
     event.preventDefault();
