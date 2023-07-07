@@ -105,7 +105,7 @@ function Control({ socket }) {
     return (
       <>
         <div className="w-6/6 mx-5 mt-5">
-          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4 mb-md">
+          <div className="grid grid-cols-2 lg:grid-cols-3 gap-4 mb-md">
             <WeatherChip name={'rain'} value={`${weather.rain} mm`} />
             <WeatherChip name={'baro'} value={`${weather.baro} hPa`} />
             <WeatherChip name={'air_temp'} value={`${weather.air_temp} C`} />

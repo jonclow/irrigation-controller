@@ -47,7 +47,7 @@ function Weather({ socket }) {
   } else {
     return (
       <>
-        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4 mb-md mt-5">
+        <div className="grid grid-cols-2 lg:grid-cols-3 gap-4 mb-md mt-5">
           <WeatherChip name={'rain'} value={`${weather.rain} mm`} />
           <WeatherChip name={'baro'} value={`${weather.baro} hPa`} />
           <WeatherChip name={'air_temp'} value={`${weather.air_temp} C`} />
