@@ -5,11 +5,21 @@ import WeatherChip from './WeatherChip';
 function Weather({ socket }) {
   const [weather, setWeather] = useState({
     rain: 0,
+    rain1: 0,
+    rain24: 0,
     baro: 0,
     air_temp: 0,
     humid: 0,
     solar: 0,
     wind_mean: {
+      sp: 0,
+      dir: 0
+    },
+    wind_high: {
+      sp: 0,
+      dir: 0
+    },
+    wind_low: {
       sp: 0,
       dir: 0
     }
@@ -47,13 +57,26 @@ function Weather({ socket }) {
   } else {
     return (
       <>
-        <div className="grid grid-cols-2 lg:grid-cols-3 gap-4 mb-md mt-5">
-          <WeatherChip name={'rain'} value={`${weather.rain} mm`} />
-          <WeatherChip name={'baro'} value={`${weather.baro} hPa`} />
-          <WeatherChip name={'air_temp'} value={`${weather.air_temp} C`} />
-          <WeatherChip name={'humid'} value={`${weather.humid} %`} />
-          <WeatherChip name={'solar'} value={`${weather.solar} kWh/m2`} />
-          <WeatherChip name={'wind'} value={`${weather.wind_mean.sp} -- ${weather.wind_mean.dir}`} />
+        <div className="mt-5 mx-5">
+          <div className="grid grid-cols-2 lg:grid-cols-3 gap-4 mb-5">
+            <WeatherChip name={'baro'} value={`${weather.baro}`} />
+            <WeatherChip name={'air_temp'} value={`${weather.air_temp} C`} />
+            <WeatherChip name={'humid'} value={`${weather.humid} %`} />
+            <WeatherChip name={'solar'} value={`${weather.solar}`} />
+          </div>
+          <div className="grid grid-cols-3 gap-2 mb-5">
+            <WeatherChip name={'rain'} value={`${weather.rain} mm`} />
+            <WeatherChip name={'rain'} value={`${weather.rain1} mm`} />
+            <WeatherChip name={'rain'} value={`${weather.rain24} mm`} />
+          </div>
+          <div className="grid grid-cols-3 gap-2">
+            <WeatherChip name={'wind'} value={`${weather.wind_low.sp} kt`}
+                         rot_deg={`${weather.wind_low.dir + 90}deg`}/>
+            <WeatherChip name={'wind'} value={`${weather.wind_mean.sp} kt`}
+                         rot_deg={`${weather.wind_mean.dir + 90}deg`}/>
+            <WeatherChip name={'wind'} value={`${weather.wind_high.sp} kt`}
+                         rot_deg={`${weather.wind_high.dir + 90}deg`}/>
+          </div>
         </div>
       </>
     )

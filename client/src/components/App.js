@@ -13,6 +13,7 @@ import NotFound from './NotFound';
 import Control from './Control';
 import Weather from './Weather';
 import Footer from "./Footer";
+import Home from "./Home";
 
 class App extends React.Component {
 
@@ -33,6 +34,9 @@ class App extends React.Component {
                   <Link to="/">Home</Link>
                 </li>
                 <li>
+                  <Link to="/control">Control</Link>
+                </li>
+                <li>
                   <Link to="/schedule">Schedule</Link>
                 </li>
                 <li>
@@ -43,9 +47,10 @@ class App extends React.Component {
           </header>
 
           <Routes>
+            <Route path="/control/*" element={<Control socket={this.socket} />} />
             <Route path="/schedule/*" element={<Schedule />} />
             <Route path="/weather/*" element={<Weather socket={this.socket} />} />
-            <Route path="/" element={<Control socket={this.socket} />} />
+            <Route path="/" element={<Home socket={this.socket} />} />
             <Route element={NotFound}/>
           </Routes>
         </Router>
