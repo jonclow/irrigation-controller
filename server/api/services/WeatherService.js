@@ -1,7 +1,15 @@
 const { Client } = require('pg');
 const _ = require('lodash');
+const STATION_ALT = 340;
 
 const WeatherService = {
+  convertAbsPressureToRel: function (p_abs, temp) {
+    const alt_c = 0.0065 * STATION_ALT;
+    const p_rel = p_abs * Math.pow((1 - alt_c / (temp + alt_c + 273.15)), -5.257);
+
+    return Math.round(p_rel * 100) / 100;
+  },
+
   addWeatherReading: async function (wx) {
     const client = new Client();
     await client.connect();
@@ -25,9 +33,12 @@ const WeatherService = {
     await client.end();
 
     return {
-      ..._.pick(reading, ['rain', 'baro', 'humid', 'solar']),
+      ..._.pick(reading, ['rain', 'humid', 'solar']),
+      baro: this.convertAbsPressureToRel(reading.baro, reading.airtemp),
       air_temp: reading.airtemp,
-      wind_mean: reading.wsmean
+      wind_mean: reading.wsmean,
+      wind_low: reading.wslow,
+      wind_high: reading.wshigh
     };
   },
 
@@ -47,6 +58,25 @@ const WeatherService = {
       WHERE dtg >= NOW() - INTERVAL '24 hour'
     `)
 
+    const { rows: basic } = await client.query(`
+      SELECT dtg, rain, baro, air_temp, humid, solar, wind_mean, wind_high, wind_low
+      FROM weather
+      WHERE dtg > NOW() - INTERVAL '20 minute'
+      ORDER BY dtg DESC
+      LIMIT 1
+    `);
+
+    await client.end();
+
+    return {
+      ...basic[0],
+      ...rainfall1[0],
+      ...rainfall24[0],
+      baro: this.convertAbsPressureToRel(basic[0].baro, basic[0].air_temp)
+    };
+  },
+
+  getDetailedWeather: async function () {
     const { rows: max_wind } = await client.query(`
       SELECT dtg, wind_high 
       FROM weather 
@@ -65,27 +95,14 @@ const WeatherService = {
       LIMIT 1
     `)
 
-    const { rows: basic } = await client.query(`
-      SELECT dtg, rain, baro, air_temp, humid, solar, wind_mean, wind_high, wind_low
-      FROM weather
-      WHERE dtg > NOW() - INTERVAL '20 minute'
-      ORDER BY dtg DESC
-      LIMIT 1
-    `);
-
-    await client.end();
-
     return {
-      ...rainfall1[0],
-      ...rainfall24[0],
       minwind24: {
         ...min_wind[0],
       },
       maxwind24: {
         ...max_wind[0],
       },
-      ...basic[0]
-    };
+    }
   }
 }
 
