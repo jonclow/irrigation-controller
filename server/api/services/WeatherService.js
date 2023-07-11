@@ -107,7 +107,7 @@ const WeatherService = {
     const baseData = await this.getBasicWeather(client);
 
     const { rows: wind_data } = await client.query(`
-      SELECT dtg, wind_mean
+      SELECT dtg, TO_CHAR(dtg, 'MON-DD HH24:MI') date_time, wind_mean
       FROM weather
       WHERE dtg >= NOW() - INTERVAL '24 hour'
       ORDER BY dtg ASC
@@ -116,7 +116,7 @@ const WeatherService = {
     return {
       ...baseData[0],
       wind_data: _.map(wind_data, (data)  => ({
-        dtg: `${data.dtg.substring(5,10)}-${data.dtg.substring(11,16)}`,
+        date_time: data.date_time,
         ...data.wind_mean
       }))
     }

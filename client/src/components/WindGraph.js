@@ -17,7 +17,7 @@ function WindGraph({ wind_data }) {
           }}
         >
           <CartesianGrid strokeDasharray="3 3" />
-          <XAxis dataKey="dtg" />
+          <XAxis dataKey="date_time" />
           <YAxis yAxisId="left" />
           <YAxis yAxisId="right" orientation="right" />
           <Tooltip />

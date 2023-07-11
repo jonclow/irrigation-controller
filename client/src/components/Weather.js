@@ -89,7 +89,7 @@ function Weather({ socket }) {
         <Routes>
           <Route path={'/wind'} element={
             <WindGraph
-              wind_data={weather.wind_data || {}}
+              wind_data={weather.wind_data || []}
             />}
           />
         </Routes>
