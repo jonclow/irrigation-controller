@@ -104,7 +104,7 @@ const WeatherService = {
     const client = new Client();
     await client.connect();
 
-    const baseData = await this.getBasicWeather(client);
+    const { rows: baseData } = await this.getBasicWeather(client);
 
     const { rows: wind_data } = await client.query(`
       SELECT dtg, TO_CHAR(dtg, 'MON-DD HH24:MI') date_time, wind_mean
