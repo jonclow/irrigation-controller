@@ -71,7 +71,9 @@ const WeatherService = {
 
     const { rows: basic } = await baseWx(client);
 
-    await client.end();
+    if (!dbClient) {
+      await client.end();
+    }
 
     return {
       ...basic[0],
