@@ -1,6 +1,12 @@
 const WeatherService = require('../services/WeatherService');
 
-exports.getBasicWeather = async function (req, res) {
-  const weather_data = await WeatherService.getBasicWeather();
-  return res.send(weather_data);
+module.exports = {
+  getBasicWeather: async function (req, res) {
+    return res.send(await WeatherService.getBasicWeather());
+  },
+
+  getDetailedWeather: async function (req, res) {
+    return res.send(await WeatherService.getDetailedWeather());
+  }
+
 }

@@ -1,6 +1,6 @@
 import React from 'react';
 
-function WeatherChip({ name, value, rot_deg }) {
+function WeatherChip({ name, sp, value, rot_deg }) {
 
   const getWindVector = (speed) => {
     let path;
@@ -61,7 +61,7 @@ function WeatherChip({ name, value, rot_deg }) {
     <div className="chip">
       {
         name === 'wind' ?
-          <img src={require(`../assets/${getWindVector(value)}.png`)} alt={`${name}`} width="80" height="80" style={{ transform: `rotate(${rot_deg})` }} />
+          <img src={require(`../assets/${getWindVector(sp)}.png`)} alt={`${name}`} width="80" height="80" style={{ transform: `rotate(${rot_deg})` }} />
           : <img src={require(`../assets/${name}.png`)} alt={`${name}`} width="80" height="80" />
       }
       {value}

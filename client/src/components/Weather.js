@@ -1,6 +1,8 @@
 import React, { useEffect, useState } from 'react';
 import '../css/base.css';
 import WeatherChip from './WeatherChip';
+import {Link, Route, Routes} from "react-router-dom";
+import WindGraph from "./WindGraph";
 
 function Weather({ socket }) {
   const [weather, setWeather] = useState({
@@ -37,7 +39,7 @@ function Weather({ socket }) {
 
   useEffect(() => {
     (async () => await Promise.all([
-      fetch(`${BASE_URL}/weather/getBasicWeather`)
+      fetch(`${BASE_URL}/weather/getDetailedWeather`)
         .then(res => res.json())
         .then((result) => {
             setWeather(result);
@@ -69,15 +71,28 @@ function Weather({ socket }) {
             <WeatherChip name={'rain'} value={`${weather.rain1} mm`} />
             <WeatherChip name={'rain'} value={`${weather.rain24} mm`} />
           </div>
-          <div className="grid grid-cols-3 gap-2">
-            <WeatherChip name={'wind'} value={`${weather.wind_low.sp} kt`}
+          <div className="grid grid-cols-3 gap-2 mb-5">
+            <WeatherChip name={'wind'} sp={weather.wind_low.sp} value={`${weather.wind_low.sp} kt`}
                          rot_deg={`${weather.wind_low.dir + 90}deg`}/>
-            <WeatherChip name={'wind'} value={`${weather.wind_mean.sp} kt`}
+            <WeatherChip name={'wind'} sp={weather.wind_mean.sp} value={`${weather.wind_mean.sp} kt`}
                          rot_deg={`${weather.wind_mean.dir + 90}deg`}/>
-            <WeatherChip name={'wind'} value={`${weather.wind_high.sp} kt`}
+            <WeatherChip name={'wind'} sp={weather.wind_high.sp} value={`${weather.wind_high.sp} kt`}
                          rot_deg={`${weather.wind_high.dir + 90}deg`}/>
           </div>
+          <div className="grid grid-cols-2 lg:grid-cols-3 gap-4">
+            <div className="chip"><Link to={'wind'}>Wind</Link></div>
+            <div className="chip"><Link to={'wind'}>Rain</Link></div>
+            <div className="chip"><Link to={'wind'}>Pressure</Link></div>
+          </div>
         </div>
+
+        <Routes>
+          <Route path={'/wind'} element={
+            <WindGraph
+              wind_data={weather.wind_data || {}}
+            />}
+          />
+        </Routes>
       </>
     )
   }

@@ -2,6 +2,14 @@ const { Client } = require('pg');
 const _ = require('lodash');
 const STATION_ALT = 340;
 
+const baseWx = async (client) => client.query(`
+    SELECT dtg, rain, baro, air_temp, humid, solar, wind_mean, wind_high, wind_low
+    FROM weather
+    WHERE dtg > NOW() - INTERVAL '20 minute'
+    ORDER BY dtg DESC
+    LIMIT 1
+  `);
+
 const WeatherService = {
   convertAbsPressureToRel: function (p_abs, temp) {
     const alt_c = 0.0065 * STATION_ALT;
@@ -42,8 +50,8 @@ const WeatherService = {
     };
   },
 
-  getBasicWeather: async function () {
-    const client = new Client();
+  getBasicWeather: async function (dbClient) {
+    const client = dbClient || new Client();
     await client.connect();
 
     const { rows: rainfall1 } = await client.query(`
@@ -58,13 +66,7 @@ const WeatherService = {
       WHERE dtg >= NOW() - INTERVAL '24 hour'
     `)
 
-    const { rows: basic } = await client.query(`
-      SELECT dtg, rain, baro, air_temp, humid, solar, wind_mean, wind_high, wind_low
-      FROM weather
-      WHERE dtg > NOW() - INTERVAL '20 minute'
-      ORDER BY dtg DESC
-      LIMIT 1
-    `);
+    const { rows: basic } = await baseWx(client);
 
     await client.end();
 
@@ -77,31 +79,41 @@ const WeatherService = {
   },
 
   getDetailedWeather: async function () {
-    const { rows: max_wind } = await client.query(`
-      SELECT dtg, wind_high 
-      FROM weather 
-      WHERE (wind_high ->> 'sp')::numeric = (SELECT MAX((wind_high ->> 'sp')::numeric) FROM weather) 
-      AND dtg >= NOW() - INTERVAL '24 hour'
-      ORDER BY dtg DESC
-      LIMIT 1
-    `)
+    // const { rows: max_wind } = await client.query(`
+    //   SELECT dtg, wind_high
+    //   FROM weather
+    //   WHERE (wind_high ->> 'sp')::numeric = (SELECT MAX((wind_high ->> 'sp')::numeric) FROM weather)
+    //   AND dtg >= NOW() - INTERVAL '24 hour'
+    //   ORDER BY dtg DESC
+    //   LIMIT 1
+    // `)
+    //
+    // const { rows: min_wind } = await client.query(`
+    //   SELECT dtg, wind_low
+    //   FROM weather
+    //   WHERE (wind_low ->> 'sp')::numeric = (SELECT MIN((wind_low ->> 'sp')::numeric) FROM weather)
+    //   AND dtg >= NOW() - INTERVAL '24 hour'
+    //   ORDER BY dtg DESC
+    //   LIMIT 1
+    // `)
+    const client = new Client();
+    await client.connect();
 
-    const { rows: min_wind } = await client.query(`
-      SELECT dtg, wind_low 
-      FROM weather 
-      WHERE (wind_low ->> 'sp')::numeric = (SELECT MIN((wind_low ->> 'sp')::numeric) FROM weather) 
-      AND dtg >= NOW() - INTERVAL '24 hour'
-      ORDER BY dtg DESC
-      LIMIT 1
+    const baseData = await this.getBasicWeather(client);
+
+    const { rows: wind_data } = await client.query(`
+      SELECT dtg, wind_mean
+      FROM weather
+      WHERE dtg >= NOW() - INTERVAL '24 hour'
+      ORDER BY dtg ASC
     `)
 
     return {
-      minwind24: {
-        ...min_wind[0],
-      },
-      maxwind24: {
-        ...max_wind[0],
-      },
+      ...baseData[0],
+      wind_data: _.map(wind_data, (data)  => ({
+        dtg: `${data.dtg.substring(5,10)}-${data.dtg.substring(11,16)}`,
+        ...data.wind_mean
+      }))
     }
   }
 }

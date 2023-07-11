@@ -73,7 +73,7 @@ function Home({ socket }) {
             <WeatherChip name={'air_temp'} value={`${weather.air_temp} C`}/>
             <WeatherChip name={'humid'} value={`${weather.humid} %`}/>
             <WeatherChip name={'solar'} value={`${weather.solar}`}/>
-            <WeatherChip name={'wind'} value={`${weather.wind_mean.sp} kt`}
+            <WeatherChip name={'wind'} sp={weather.wind_mean.sp} value={`${weather.wind_mean.sp} kt`}
                          rot_deg={`${weather.wind_mean.dir + 90}deg`}/>
           </div>
           <div className={'grid grid-cols-2 lg:grid-cols-3 gap-4 border border-slate-400 rounded-md p-0.5'}>
