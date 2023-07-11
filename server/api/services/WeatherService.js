@@ -52,7 +52,10 @@ const WeatherService = {
 
   getBasicWeather: async function (dbClient) {
     const client = dbClient || new Client();
-    await client.connect();
+
+    if (!dbClient) {
+      await client.connect();
+    }
 
     const { rows: rainfall1 } = await client.query(`
       SELECT SUM (rain) AS rain1
