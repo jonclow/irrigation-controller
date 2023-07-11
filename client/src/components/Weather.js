@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import '../css/base.css';
 import WeatherChip from './WeatherChip';
-import {Link, Route, Routes} from "react-router-dom";
+import { Link, Route, Routes } from 'react-router-dom';
 import WindGraph from "./WindGraph";
 
 function Weather({ socket }) {
@@ -84,15 +84,16 @@ function Weather({ socket }) {
             <div className="chip"><Link to={'wind'}>Rain</Link></div>
             <div className="chip"><Link to={'wind'}>Pressure</Link></div>
           </div>
+
+          <Routes>
+            <Route path={'/wind'} element={
+              <WindGraph
+                wind_data={weather.wind_data || []}
+              />}
+            />
+          </Routes>
         </div>
 
-        <Routes>
-          <Route path={'/wind'} element={
-            <WindGraph
-              wind_data={weather.wind_data || []}
-            />}
-          />
-        </Routes>
       </>
     )
   }

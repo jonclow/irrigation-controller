@@ -3,7 +3,7 @@ import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend, Responsi
 
 function WindGraph({ wind_data }) {
   return (
-    <>
+    <div className="h-96 mt-10">
       <ResponsiveContainer width="100%" height="100%">
         <LineChart
           width={500}
@@ -26,7 +26,7 @@ function WindGraph({ wind_data }) {
           <Line yAxisId="right" type="monotone" dataKey="dir" stroke="#82ca9d" />
         </LineChart>
       </ResponsiveContainer>
-    </>
+    </div>
   )
 }
 
