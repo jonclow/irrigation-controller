@@ -104,7 +104,7 @@ const WeatherService = {
     const client = new Client();
     await client.connect();
 
-    const { rows: baseData } = await this.getBasicWeather(client);
+    const baseData = await this.getBasicWeather(client);
 
     const { rows: wind_data } = await client.query(`
       SELECT dtg, TO_CHAR(dtg, 'MON-DD HH24:MI') date_time, wind_mean
@@ -114,7 +114,7 @@ const WeatherService = {
     `)
 
     return {
-      ...baseData[0],
+      ...baseData,
       wind_data: _.map(wind_data, (data)  => ({
         date_time: data.date_time,
         ...data.wind_mean
