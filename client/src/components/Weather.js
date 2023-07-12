@@ -59,18 +59,24 @@ function Weather({ socket }) {
     return (
       <>
         <div className="mt-5 mx-5">
-          <div className="grid grid-cols-2 lg:grid-cols-3 gap-4 mb-5">
+          <div className="grid grid-cols-2 lg:grid-cols-3 gap-4 mb-5 border border-slate-400 rounded-lg p-0.5">
             <WeatherChip name={'baro'} value={`${weather.baro}`} />
             <WeatherChip name={'air_temp'} value={`${weather.air_temp} C`} />
             <WeatherChip name={'humid'} value={`${weather.humid} %`} />
             <WeatherChip name={'solar'} value={`${weather.solar}`} />
           </div>
-          <div className="grid grid-cols-3 gap-2 mb-5">
+          <div className="grid grid-cols-3 gap-2 mb-5 border border-slate-400 rounded-lg p-0.5">
+            <div className="chip">10 min</div>
+            <div className="chip">1 Hour</div>
+            <div className="chip">24 Hour</div>
             <WeatherChip name={'rain'} value={`${weather.rain} mm`} />
             <WeatherChip name={'rain'} value={`${weather.rain1} mm`} />
             <WeatherChip name={'rain'} value={`${weather.rain24} mm`} />
           </div>
-          <div className="grid grid-cols-3 gap-2 mb-5">
+          <div className="grid grid-cols-3 gap-2 mb-5 border border-slate-400 rounded-lg p-0.5">
+            <div className="chip">Low</div>
+            <div className="chip">Mean</div>
+            <div className="chip">Max</div>
             <WeatherChip name={'wind'} sp={weather.wind_low.sp} value={`${weather.wind_low.sp} kt`}
                          rot_deg={`${weather.wind_low.dir + 90}deg`}/>
             <WeatherChip name={'wind'} sp={weather.wind_mean.sp} value={`${weather.wind_mean.sp} kt`}
