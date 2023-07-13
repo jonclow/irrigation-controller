@@ -1,9 +1,9 @@
 import React from 'react';
-import {Outlet, useNavigate} from 'react-router-dom';
+import { Outlet, useNavigate } from 'react-router-dom';
 // import water_drop from "./assets/water_drop.svg";
 
 function NavBar() {
-  let navigate = useNavigate();
+  const navigate = useNavigate();
 
   return (
     <>

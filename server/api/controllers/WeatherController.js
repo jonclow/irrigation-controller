@@ -11,6 +11,10 @@ module.exports = {
 
   getWindGraphData: async function (req, res) {
     return res.send(await WeatherService.getWindGraphData());
+  },
+
+  getBaroGraphData: async function (req, res) {
+    return res.send(await WeatherService.getBaroGraphData());
   }
 
 }

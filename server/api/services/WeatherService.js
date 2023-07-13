@@ -69,6 +69,18 @@ const WeatherService = {
       WHERE dtg >= NOW() - INTERVAL '24 hour'
     `)
 
+    const { rows: rainfall48 } = await client.query(`
+      SELECT SUM (rain) AS rain48
+      FROM weather 
+      WHERE dtg >= NOW() - INTERVAL '48 hour'
+    `)
+
+    const { rows: rainfallWeek } = await client.query(`
+      SELECT SUM (rain) AS rainWeek
+      FROM weather 
+      WHERE dtg >= NOW() - INTERVAL '1 week'
+    `)
+
     const { rows: basic } = await baseWx(client);
 
     if (!dbClient) {
@@ -79,6 +91,8 @@ const WeatherService = {
       ...basic[0],
       ...rainfall1[0],
       ...rainfall24[0],
+      ...rainfall48[0],
+      ...rainfallWeek[0],
       baro: this.convertAbsPressureToRel(basic[0].baro, basic[0].air_temp)
     };
   },
@@ -92,7 +106,7 @@ const WeatherService = {
     const { rows: max_wind } = await client.query(`
       SELECT dtg, TO_CHAR(dtg AT TIME ZONE 'pacific/auckland', 'MON-DD HH24:MI') date_time, wind_high
       FROM weather
-      WHERE (wind_high ->> 'sp')::numeric = (SELECT MAX((wind_high ->> 'sp')::numeric) FROM weather)
+      WHERE (wind_high ->> 'sp')::numeric = (SELECT MAX((wind_high ->> 'sp')::numeric) FROM weather WHERE dtg >= NOW() - INTERVAL '24 hour')
       AND dtg >= NOW() - INTERVAL '24 hour'
       ORDER BY dtg DESC
       LIMIT 1
@@ -101,12 +115,13 @@ const WeatherService = {
     const { rows: min_wind } = await client.query(`
       SELECT dtg, TO_CHAR(dtg AT TIME ZONE 'pacific/auckland', 'MON-DD HH24:MI') date_time, wind_low
       FROM weather
-      WHERE (wind_low ->> 'sp')::numeric = (SELECT MIN((wind_low ->> 'sp')::numeric) FROM weather)
+      WHERE (wind_low ->> 'sp')::numeric = (SELECT MIN((wind_low ->> 'sp')::numeric) FROM weather WHERE dtg >= NOW() - INTERVAL '24 hour')
       AND dtg >= NOW() - INTERVAL '24 hour'
       ORDER BY dtg DESC
       LIMIT 1
     `)
 
+    await client.end();
 
     return {
       ...baseData,
@@ -124,11 +139,13 @@ const WeatherService = {
     await client.connect();
 
     const { rows: wind_data } = await client.query(`
-      SELECT dtg, TO_CHAR(dtg AT TIME ZONE 'pacific/auckland', 'MON-DD HH24:MI') date_time, wind_mean, wind_high, wind_low
+      SELECT dtg, TO_CHAR(dtg AT TIME ZONE 'pacific/auckland', 'DD HH24:MI') date_time, wind_mean, wind_high, wind_low
       FROM weather
       WHERE dtg >= NOW() - INTERVAL '24 hour'
       ORDER BY dtg ASC
     `)
+
+    await client.end();
 
     return {
       wind_data: _.map(wind_data, (data)  => ({
@@ -146,6 +163,26 @@ const WeatherService = {
     }
   },
 
+  getBaroGraphData: async function () {
+    const client = new Client();
+    await client.connect();
+
+    const { rows: baro_data } = await client.query(`
+      SELECT dtg, TO_CHAR(dtg AT TIME ZONE 'pacific/auckland', 'DD HH24:MI') date_time, baro, air_temp
+      FROM weather
+      WHERE dtg >= NOW() - INTERVAL '24 hour'
+      ORDER BY dtg ASC
+    `)
+
+    await client.end();
+
+    return {
+      baro_data: _.map(baro_data, (data) => ({
+        date_time: data.date_time,
+        baro: this.convertAbsPressureToRel(data.baro, data.air_temp),
+      }))
+    }
+  },
 
 }
 

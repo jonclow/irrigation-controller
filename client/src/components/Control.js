@@ -2,32 +2,24 @@ import React, { useEffect, useState } from 'react';
 import '../css/base.css';
 import DurationSlider from './DurationSlider';
 import Valve from './Valve';
+import {useLoaderData} from "react-router-dom";
 
 function Control({ socket }) {
   const [error, setError] = useState(null);
-  const [isLoaded, setIsLoaded] = useState(false);
+  const [isLoaded, setIsLoaded] = useState(true);
   const [valves, setValves] = useState([]);
   const [duration, setDuration] = useState(10);
   const BASE_URL = process.env.REACT_APP_BASE_URL;
+
+  const valve_data = useLoaderData();
 
   socket.on('valve-update', (update) => {
     setValves(update);
   });
 
   useEffect(() => {
-    (async () => await fetch(`${BASE_URL}/valve/getValveState`)
-      .then(res => res.json())
-      .then(
-        (result) => {
-          setValves(result);
-        },
-        (error) => {
-          setError(error);
-        }
-      ))();
-
-    setIsLoaded(true)
-  }, [BASE_URL]);
+    setValves(valve_data);
+  }, []);
 
   const toggleValveClick = (id) => {
     setIsLoaded(false);
