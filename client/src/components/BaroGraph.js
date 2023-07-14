@@ -21,7 +21,7 @@ function BaroGraph() {
         >
           <CartesianGrid strokeDasharray="3 3" />
           <XAxis dataKey="date_time" angle={45} tickMargin={5} />
-          <YAxis yAxisId="left" />
+          <YAxis yAxisId="left" domain={[980, 1020]} />
           <Tooltip />
           <Legend />
           <Line yAxisId="left" type="monotone" dataKey="baro" stroke="#8884d8" activeDot={{ r: 8 }} />

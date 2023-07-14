@@ -126,10 +126,12 @@ const WeatherService = {
     return {
       ...baseData,
       max_wind_24: {
-        ...max_wind[0]
+        date_time: max_wind[0].date_time,
+        ...max_wind[0].wind_high
       },
       min_wind_24: {
-        ...min_wind[0]
+        date_time: min_wind[0].date_time,
+        ...min_wind[0].wind_low
       }
     }
   },

@@ -19,7 +19,7 @@ function Control({ socket }) {
 
   useEffect(() => {
     setValves(valve_data);
-  }, []);
+  }, [valve_data]);
 
   const toggleValveClick = (id) => {
     setIsLoaded(false);
