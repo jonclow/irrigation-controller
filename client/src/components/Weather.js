@@ -109,16 +109,28 @@ function Weather({ socket }) {
             <WeatherChip name={'wind'} sp={weather.wind_high.sp} value={`${weather.wind_high.sp} kt`}
                          rot_deg={`${weather.wind_high.dir + 90}deg`}/>
           </div>
-          <div className="grid grid-cols-3 gap-2">
-            <div>Min 24</div>
-            <div>{weather.min_wind_24.date_time}</div>
-            <WeatherChip name={'wind'} sp={weather.min_wind_24.sp} value={`${weather.min_wind_24.sp} kt`}
-                         rot_deg={`${weather.min_wind_24.dir + 90}deg`}/>
-            <div>Max 24</div>
-            <div>{weather.max_wind_24.date_time}</div>
-            <WeatherChip name={'wind'} sp={weather.max_wind_24.sp} value={`${weather.max_wind_24.sp} kt`}
-                         rot_deg={`${weather.max_wind_24.dir + 90}deg`}/>
-          </div>
+          {
+            windowDimensions.width < 780 ? (
+              <div className="grid grid-cols-1 gap-2 mt-2">
+                <div>Min Last 24 hrs</div>
+                <WeatherChip name={'wind'} sp={weather.min_wind_24.sp} value={`${weather.min_wind_24.sp} kt -> ${weather.min_wind_24.date_time}`}
+                             rot_deg={`${weather.min_wind_24.dir + 90}deg`}/>
+                <div>Max Last 24 hrs</div>
+                <WeatherChip name={'wind'} sp={weather.max_wind_24.sp} value={`${weather.max_wind_24.sp} kt -> ${weather.max_wind_24.date_time}`}
+                             rot_deg={`${weather.max_wind_24.dir + 90}deg`}/>
+              </div>
+            ) : (
+              <div className="grid grid-cols-2 gap-2 mt-2">
+                <div>Min Last 24 hrs</div>
+                <div>Max Last 24 hrs</div>
+                <WeatherChip name={'wind'} sp={weather.min_wind_24.sp} value={`${weather.min_wind_24.sp} kt -> ${weather.min_wind_24.date_time}`}
+                             rot_deg={`${weather.min_wind_24.dir + 90}deg`}/>
+                <WeatherChip name={'wind'} sp={weather.max_wind_24.sp} value={`${weather.max_wind_24.sp} kt -> ${weather.max_wind_24.date_time}`}
+                             rot_deg={`${weather.max_wind_24.dir + 90}deg`}/>
+              </div>
+            )
+          }
+
         </div>
 
         <div className="grid grid-cols-2 lg:grid-cols-4 gap-2 border border-slate-400 rounded-lg p-0.5">
