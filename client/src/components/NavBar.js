@@ -1,5 +1,6 @@
 import React from 'react';
 import { Outlet, useNavigate } from 'react-router-dom';
+import Footer from './Footer';
 // import water_drop from "./assets/water_drop.svg";
 
 function NavBar() {
@@ -14,6 +15,7 @@ function NavBar() {
         <button onClick={() => navigate('/weather')} className="rounded-full bg-slate-600 hover:bg-violet-600 active:bg-violet-700 focus:outline-none focus:ring focus:ring-violet-300">Weather</button>
       </div>
       <Outlet/>
+      <Footer />
     </>
   )
 }

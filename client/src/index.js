@@ -12,11 +12,11 @@ import Schedule from './components/Schedule';
 import NotFound from './components/NotFound';
 import Control from './components/Control';
 import Weather from './components/Weather';
-import Footer from './components/Footer';
-import Home from "./components/Home";
+import Home from './components/Home';
 import WindGraph from './components/WindGraph';
-import NavBar from "./components/NavBar";
-import BaroGraph from "./components/BaroGraph";
+import NavBar from './components/NavBar';
+import BaroGraph from './components/BaroGraph';
+import RainGraph from './components/RainGraph';
 const BASE_URL = process.env.REACT_APP_BASE_URL;
 
 const socket = io('http://192.168.20.59:3001');
@@ -30,15 +30,11 @@ const router = createBrowserRouter(
       <Route path="/weather" element={<Weather socket={socket} />} loader={() => fetch(`${BASE_URL}/weather/getDetailedWeather`)}>
         <Route path="wind" element={<WindGraph />} loader={() => fetch(`${BASE_URL}/weather/getWindGraphData`)} />
         <Route path="baro" element={<BaroGraph />} loader={() => fetch(`${BASE_URL}/weather/getBaroGraphData`)} />
+        <Route path="rain" element={<RainGraph />} loader={() => fetch(`${BASE_URL}/weather/getRainGraphData`)} />
       </Route>,
     </Route>,
     <Route element={NotFound}/>
   ])
 );
 
-createRoot(document.getElementById('root')).render(
-  <>
-    <RouterProvider router={router} />
-    <Footer />
-  </>
-);
+createRoot(document.getElementById('root')).render(<RouterProvider router={router} />);

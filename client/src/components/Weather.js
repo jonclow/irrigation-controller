@@ -102,11 +102,11 @@ function Weather({ socket }) {
             <div>Low</div>
             <div>Mean</div>
             <div>Max</div>
-            <WeatherChip name={'wind'} sp={weather.wind_low.sp} value={`${weather.wind_low.sp} kt`}
+            <WeatherChip name={'wind'} sp={weather.wind_low.sp} value={windowDimensions.width < 780 ? `${weather.wind_low.sp}` : `${weather.wind_low.sp} kt`}
                          rot_deg={`${weather.wind_low.dir + 90}deg`}/>
-            <WeatherChip name={'wind'} sp={weather.wind_mean.sp} value={`${weather.wind_mean.sp} kt`}
+            <WeatherChip name={'wind'} sp={weather.wind_mean.sp} value={windowDimensions.width < 780 ? `${weather.wind_mean.sp}` : `${weather.wind_mean.sp} kt`}
                          rot_deg={`${weather.wind_mean.dir + 90}deg`}/>
-            <WeatherChip name={'wind'} sp={weather.wind_high.sp} value={`${weather.wind_high.sp} kt`}
+            <WeatherChip name={'wind'} sp={weather.wind_high.sp} value={windowDimensions.width < 780 ? `${weather.wind_high.sp}` : `${weather.wind_high.sp} kt`}
                          rot_deg={`${weather.wind_high.dir + 90}deg`}/>
           </div>
           {
@@ -136,11 +136,13 @@ function Weather({ socket }) {
         <div className="grid grid-cols-2 lg:grid-cols-4 gap-2 border border-slate-400 rounded-lg p-0.5">
           <div className="chip"><Link to={'wind'}>Wind</Link></div>
           <div className="chip"><Link to={'baro'}>Pressure</Link></div>
+          <div className="chip"><Link to={'rain'}>Rain</Link></div>
+        </div>
+        <div className="h-96 mt-10">
+          <Outlet />
         </div>
 
-        <Outlet />
       </div>
-
     </>
   )
 }

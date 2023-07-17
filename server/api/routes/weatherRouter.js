@@ -7,6 +7,7 @@ router.get('/getBasicWeather', WeatherController.getBasicWeather);
 router.get('/getDetailedWeather', WeatherController.getDetailedWeather);
 router.get('/getWindGraphData', WeatherController.getWindGraphData);
 router.get('/getBaroGraphData', WeatherController.getBaroGraphData);
+router.get('/getRainGraphData', WeatherController.getRainGraphData);
 router.get('/', WeatherController.getBasicWeather);
 
 module.exports = router;

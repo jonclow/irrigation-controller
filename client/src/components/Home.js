@@ -1,6 +1,6 @@
-import React, {useEffect, useState} from "react";
-import WeatherChip from "./WeatherChip";
-import ValveChip from "./ValveChip";
+import React, {useEffect, useState} from 'react';
+import WeatherChip from './WeatherChip';
+import ValveChip from './ValveChip';
 
 
 function Home({ socket }) {
@@ -68,7 +68,7 @@ function Home({ socket }) {
       <>
         <div className="w-6/6 mx-5 mt-5">
           <div className="grid grid-cols-2 lg:grid-cols-3 gap-4 mb-5 border border-slate-400 rounded-lg p-0.5">
-            <WeatherChip key={'rain'} name={'rain'} value={`${weather.rain1} mm`}/>
+            <WeatherChip key={'rain'} name={'rain'} value={`${weather.rain * 6} mm/hr`}/>
             <WeatherChip key={'baro'} name={'baro'} value={`${weather.baro}`}/>
             <WeatherChip key={'air_temp'} name={'air_temp'} value={`${weather.air_temp} C`}/>
             <WeatherChip key={'humid'} name={'humid'} value={`${weather.humid} %`}/>

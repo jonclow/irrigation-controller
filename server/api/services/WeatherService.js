@@ -186,6 +186,26 @@ const WeatherService = {
     }
   },
 
+  getRainGraphData: async function () {
+    const client = new Client();
+    await client.connect();
+
+    const { rows: rain_data } = await client.query(`
+      SELECT sum(rain) as total_rain, TO_CHAR(DATE_TRUNC('day', dtg) AT TIME ZONE 'pacific/auckland', 'Mon DD') rain_day
+      FROM weather
+      WHERE dtg >= NOW() - INTERVAL '1 month'
+      GROUP BY DATE_TRUNC('day', dtg)
+      ORDER BY rain_day ASC
+    `)
+
+    await client.end();
+
+    return {
+      rain_data
+    }
+
+  }
+
 }
 
 module.exports = WeatherService;
