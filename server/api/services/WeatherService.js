@@ -57,31 +57,35 @@ const WeatherService = {
       await client.connect();
     }
 
-    const { rows: rainfall1 } = await client.query(`
-      SELECT SUM (rain) AS rain1
-      FROM weather
-      WHERE dtg >= NOW() - INTERVAL '1 hour'
-    `)
-
-    const { rows: rainfall24 } = await client.query(`
-      SELECT SUM (rain) AS rain24
-      FROM weather 
-      WHERE dtg >= NOW() - INTERVAL '24 hour'
-    `)
-
-    const { rows: rainfall48 } = await client.query(`
-      SELECT SUM (rain) AS rain48
-      FROM weather 
-      WHERE dtg >= NOW() - INTERVAL '48 hour'
-    `)
-
-    const { rows: rainfallWeek } = await client.query(`
-      SELECT SUM (rain) AS rainWeek
-      FROM weather 
-      WHERE dtg >= NOW() - INTERVAL '1 week'
-    `)
-
-    const { rows: basic } = await baseWx(client);
+    const [
+      { rows: rainfall1 },
+      { rows: rainfall24 },
+      { rows: rainfall48 },
+      { rows: rainfallWeek },
+      { rows: basic }
+    ] = await Promise.all([
+      client.query(`
+        SELECT ROUND(SUM(rain)::numeric, 1) AS rain1
+        FROM weather
+        WHERE dtg >= NOW() - INTERVAL '1 hour'
+      `),
+      client.query(`
+        SELECT ROUND(SUM(rain)::numeric, 1) AS rain24
+        FROM weather 
+        WHERE dtg >= NOW() - INTERVAL '24 hour'
+      `),
+      client.query(`
+        SELECT ROUND(SUM(rain)::numeric, 1) AS rain48
+        FROM weather 
+        WHERE dtg >= NOW() - INTERVAL '48 hour'
+      `),
+      client.query(`
+        SELECT ROUND(SUM(rain)::numeric, 1) AS rainWeek
+        FROM weather 
+        WHERE dtg >= NOW() - INTERVAL '1 week'
+      `),
+      baseWx(client)
+    ])
 
     if (!dbClient) {
       await client.end();
@@ -101,25 +105,29 @@ const WeatherService = {
     const client = new Client();
     await client.connect();
 
-    const baseData = await this.getBasicWeather(client);
-
-    const { rows: max_wind } = await client.query(`
-      SELECT dtg, TO_CHAR(dtg AT TIME ZONE 'pacific/auckland', 'MON-DD HH24:MI') date_time, wind_high
-      FROM weather
-      WHERE (wind_high ->> 'sp')::numeric = (SELECT MAX((wind_high ->> 'sp')::numeric) FROM weather WHERE dtg >= NOW() - INTERVAL '24 hour')
-      AND dtg >= NOW() - INTERVAL '24 hour'
-      ORDER BY dtg DESC
-      LIMIT 1
-    `)
-
-    const { rows: min_wind } = await client.query(`
-      SELECT dtg, TO_CHAR(dtg AT TIME ZONE 'pacific/auckland', 'MON-DD HH24:MI') date_time, wind_low
-      FROM weather
-      WHERE (wind_low ->> 'sp')::numeric = (SELECT MIN((wind_low ->> 'sp')::numeric) FROM weather WHERE dtg >= NOW() - INTERVAL '24 hour')
-      AND dtg >= NOW() - INTERVAL '24 hour'
-      ORDER BY dtg DESC
-      LIMIT 1
-    `)
+    const [
+      baseData,
+      { rows: max_wind },
+      { rows: min_wind }
+    ] = await Promise.all([
+      this.getBasicWeather(client),
+      client.query(`
+        SELECT dtg, TO_CHAR(dtg AT TIME ZONE 'pacific/auckland', 'MON-DD HH24:MI') date_time, wind_high
+        FROM weather
+        WHERE (wind_high ->> 'sp')::numeric = (SELECT MAX((wind_high ->> 'sp')::numeric) FROM weather WHERE dtg >= NOW() - INTERVAL '24 hour')
+        AND dtg >= NOW() - INTERVAL '24 hour'
+        ORDER BY dtg DESC
+        LIMIT 1
+      `),
+      client.query(`
+        SELECT dtg, TO_CHAR(dtg AT TIME ZONE 'pacific/auckland', 'MON-DD HH24:MI') date_time, wind_low
+        FROM weather
+        WHERE (wind_low ->> 'sp')::numeric = (SELECT MIN((wind_low ->> 'sp')::numeric) FROM weather WHERE dtg >= NOW() - INTERVAL '24 hour')
+        AND dtg >= NOW() - INTERVAL '24 hour'
+        ORDER BY dtg DESC
+        LIMIT 1
+      `)
+    ]);
 
     await client.end();
 
@@ -191,7 +199,7 @@ const WeatherService = {
     await client.connect();
 
     const { rows: rain_data } = await client.query(`
-      SELECT sum(rain) as total_rain, TO_CHAR(DATE_TRUNC('day', dtg) AT TIME ZONE 'pacific/auckland', 'Mon DD') rain_day
+      SELECT ROUND(SUM(rain)::numeric, 1) as total_rain, TO_CHAR(DATE_TRUNC('day', dtg) AT TIME ZONE 'pacific/auckland', 'Mon DD') rain_day
       FROM weather
       WHERE dtg >= NOW() - INTERVAL '1 month'
       GROUP BY DATE_TRUNC('day', dtg)
