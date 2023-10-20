@@ -22,31 +22,29 @@ const WeatherService = {
     const client = new Client();
     await client.connect();
 
-    const reading = JSON.parse(wx);
-
     await client.query(`
       INSERT INTO weather(dtg, rain, baro, air_temp, humid, solar, wind_low, wind_high, wind_mean)
       VALUES(CURRENT_TIMESTAMP, $1, $2, $3, $4, $5, $6, $7, $8)
     `, [
-      reading.rain,
-      reading.baro,
-      reading.airtemp,
-      reading.humid,
-      reading.solar,
-      reading.wslow,
-      reading.wshigh,
-      reading.wsmean
+      wx.rain,
+      wx.baro,
+      wx.airtemp,
+      wx.humid,
+      wx.solar,
+      wx.wslow,
+      wx.wshigh,
+      wx.wsmean
     ]);
 
     await client.end();
 
     return {
-      ..._.pick(reading, ['rain', 'humid', 'solar']),
-      baro: this.convertAbsPressureToRel(reading.baro, reading.airtemp),
-      air_temp: reading.airtemp,
-      wind_mean: reading.wsmean,
-      wind_low: reading.wslow,
-      wind_high: reading.wshigh
+      ..._.pick(wx, ['rain', 'humid', 'solar']),
+      baro: this.convertAbsPressureToRel(wx.baro, wx.airtemp),
+      air_temp: wx.airtemp,
+      wind_mean: wx.wsmean,
+      wind_low: wx.wslow,
+      wind_high: wx.wshigh
     };
   },
 

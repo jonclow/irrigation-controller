@@ -44,9 +44,13 @@ function onSignal () {
 }
 
 async function addWeatherReading(data) {
-  const reading = await WeatherService.addWeatherReading(data);
-
-  socket.emit('weather-update', reading);
+  try {
+    const parsedWxData = JSON.parse(data);
+    const reading = await WeatherService.addWeatherReading(parsedWxData);
+    socket.emit('weather-update', reading);
+  } catch (e) {
+    console.log(`addWeatherReading - invalid JSON from weather station: ${data}`);
+  }
 }
 
 createTerminus(server, {
