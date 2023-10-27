@@ -1,11 +1,10 @@
 [Unit]
 Description=Irrigation controller
-After=network.target
+After=multi-user.target
 
 [Service]
-ExecStart=/home/pi/irrigation-controller/start.sh
-Restart=on-failure
-User=pi
+ExecStart=/bin/bash /home/jon/irrigation-controller/start.sh
+User=jon
 
 [Install]
 WantedBy=multi-user.target
