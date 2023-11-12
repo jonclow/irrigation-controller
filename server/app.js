@@ -46,7 +46,13 @@ function onSignal () {
 async function addWeatherReading(data) {
   try {
     const parsedWxData = JSON.parse(data);
+
+    console.log('Weather Data Payload:  ', parsedWxData);
+
     const reading = await WeatherService.addWeatherReading(parsedWxData);
+
+    console.log('Weather Update Output:  ', reading);
+
     socket.emit('weather-update', reading);
   } catch (e) {
     console.log(`addWeatherReading - invalid JSON from weather station: ${data}`);

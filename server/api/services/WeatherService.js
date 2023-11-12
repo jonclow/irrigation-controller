@@ -95,7 +95,7 @@ const WeatherService = {
       ...rainfall24[0],
       ...rainfall48[0],
       ...rainfallWeek[0],
-      baro: this.convertAbsPressureToRel(basic[0].baro, basic[0].air_temp)
+      baro: this.convertAbsPressureToRel(basic[0]?.baro || 1010, basic[0]?.air_temp || 15)
     };
   },
 
@@ -185,7 +185,7 @@ const WeatherService = {
     await client.end();
 
     return {
-      baro_data: _.map(baro_data, (data) => ({
+      baro_data: _.map(baro_data || [], (data) => ({
         date_time: data.date_time,
         baro: this.convertAbsPressureToRel(data.baro, data.air_temp),
       }))
