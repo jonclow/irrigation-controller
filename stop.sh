@@ -1,11 +1,12 @@
 #!/bin/bash
 
-# Stop script for Irrigation Controller
+# Stop script for Irrigation Controller Backend API
+# Frontend runs separately on NAS via Docker
 
 SCRIPT_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 cd "$SCRIPT_DIR"
 
-echo "Stopping Irrigation Controller..."
+echo "Stopping Backend API..."
 
 STOPPED=0
 
@@ -25,38 +26,16 @@ if [ -f logs/api.pid ]; then
     rm logs/api.pid
 fi
 
-# Stop frontend server
-if [ -f logs/frontend.pid ]; then
-    FRONTEND_PID=$(cat logs/frontend.pid)
-    if ps -p $FRONTEND_PID > /dev/null 2>&1; then
-        echo "Stopping frontend server (PID: $FRONTEND_PID)..."
-        kill $FRONTEND_PID 2>/dev/null || true
-        sleep 1
-        # Force kill if still running
-        if ps -p $FRONTEND_PID > /dev/null 2>&1; then
-            kill -9 $FRONTEND_PID 2>/dev/null || true
-        fi
-        STOPPED=1
-    fi
-    rm logs/frontend.pid
-fi
-
 if [ $STOPPED -eq 0 ]; then
-    echo "No running processes found"
+    echo "No running API process found"
 
-    # Check for any node processes that might be our servers
+    # Check for any orphaned API process
     API_PROC=$(pgrep -f "node.*server/app.js" || true)
-    FRONTEND_PROC=$(pgrep -f "node.*build/server/index.js" || true)
 
     if [ ! -z "$API_PROC" ]; then
         echo "Found orphaned API process (PID: $API_PROC), killing..."
         kill $API_PROC 2>/dev/null || true
     fi
-
-    if [ ! -z "$FRONTEND_PROC" ]; then
-        echo "Found orphaned frontend process (PID: $FRONTEND_PROC), killing..."
-        kill $FRONTEND_PROC 2>/dev/null || true
-    fi
 else
-    echo "✓ Irrigation system stopped"
+    echo "✓ Backend API stopped"
 fi
