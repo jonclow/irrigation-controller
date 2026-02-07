@@ -23,12 +23,12 @@ FROM node:20-alpine
 
 WORKDIR /app
 
-# Install all dependencies (SSR server needs them at runtime)
+# Copy package files
 COPY package*.json ./
-RUN npm ci
 
-# Copy built assets from builder
+# Copy built assets and node_modules from builder
 COPY --from=builder /app/build ./build
+COPY --from=builder /app/node_modules ./node_modules
 
 # Create non-root user
 RUN addgroup -g 1001 -S nodejs && \
