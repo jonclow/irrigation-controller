@@ -45,4 +45,4 @@ HEALTHCHECK --interval=30s --timeout=3s --start-period=10s --retries=3 \
   CMD node -e "require('http').get('http://localhost:3000', (res) => { process.exit(res.statusCode === 200 ? 0 : 1); })"
 
 # Start the SSR server
-CMD ["node", "build/server/index.js"]
+CMD ["npx", "react-router-serve", "./build/server/index.js"]
