@@ -3,7 +3,7 @@ version: '3.8'
 services:
   irrigation-frontend:
     build:
-      context: ./client
+      context: .
       dockerfile: Dockerfile
     image: irrigation-frontend:latest
     container_name: irrigation-frontend
