@@ -54,7 +54,27 @@ const ValveService = {
   },
 
   initValveControl: async function () {
-    const GPIO = require('onoff').Gpio;
+    let GPIO;
+    if (process.platform === 'linux' && require('os').release().toLowerCase().includes('microsoft')) {
+      // We are in WSL - Use a Mock
+      console.log('⚠️ WSL Detected: Using Virtual GPIO Mock');
+      GPIO = class MockGpio {
+        constructor(pin, direction) {
+          this.pin = pin;
+          console.log(`[GPIO] Initialized Pin ${pin} as ${direction}`);
+        }
+        writeSync(value) {
+          console.log(`[GPIO] Pin ${this.pin} set to: ${value}`);
+        }
+        unexport() {
+          console.log(`[GPIO] Pin ${this.pin} unexported`);
+        }
+      };
+    } else {
+      // Real Linux/Raspberry Pi environment
+      GPIO = require('onoff').Gpio;
+    }
+    // const GPIO = require('onoff').Gpio;
 
     return _.map(require('../config/valve'), (valve) => ({
       ...valve,

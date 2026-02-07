@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import '../css/base.css';
+import '../../app/css/base.css';
 import WeatherChip from './WeatherChip';
 import { Link, Outlet, useLoaderData } from 'react-router-dom';
 

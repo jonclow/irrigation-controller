@@ -1,0 +1,60 @@
+version: '3.8'
+
+services:
+  irrigation-frontend:
+    build:
+      context: ./client
+      dockerfile: Dockerfile
+    image: irrigation-frontend:latest
+    container_name: irrigation-frontend
+    hostname: irrigation-frontend
+
+    # Port mapping
+    # Only expose to localhost (Apache will proxy to this)
+    ports:
+      - "127.0.0.1:3000:3000"
+
+    # Environment variables
+    environment:
+      - NODE_ENV=production
+      - PORT=3000
+      - VITE_BASE_URL=http://192.168.20.59:3001
+
+    # Restart policy
+    restart: unless-stopped
+
+    # Resource limits (optional - adjust based on NAS resources)
+    deploy:
+      resources:
+        limits:
+          cpus: '1.0'
+          memory: 512M
+        reservations:
+          memory: 256M
+
+    # Health check
+    healthcheck:
+      test: ["CMD", "node", "-e", "require('http').get('http://localhost:3000', (r) => process.exit(r.statusCode === 200 ? 0 : 1))"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+
+    # Logging
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"
+
+    # Network
+    network_mode: bridge
+
+    # Labels
+    labels:
+      com.irrigation.description: "Irrigation Controller Frontend SSR"
+      com.irrigation.component: "frontend"
+
+networks:
+  default:
+    name: irrigation-network

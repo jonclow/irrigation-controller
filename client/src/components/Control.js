@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import '../css/base.css';
+import '../../app/css/base.css';
 import DurationSlider from './DurationSlider';
 import Valve from './Valve';
 import {useLoaderData} from "react-router-dom";

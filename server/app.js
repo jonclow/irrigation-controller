@@ -6,24 +6,29 @@ const cors = require('cors');
 const bodyParser = require('body-parser');
 const cron = require('node-cron');
 const { createTerminus } = require('@godaddy/terminus');
-const { SerialPort } = require('serialport');
-const { ReadlineParser } = require('@serialport/parser-readline');
 
 const ValveService = require('./api/services/ValveService');
 const ScheduleService = require('./api/services/ScheduleService');
 const WeatherService = require('./api/services/WeatherService');
+const SerialPortManager = require('./utils/serialPortManager');
 const _ = require("lodash");
 
 const app = express();
 const server = http.createServer(app);
 const socket = require('socket.io')(server, {
   cors: {
-    origin: process.env.SOCKET_CLIENT,
+    origin: process.env.NODE_ENV === 'development' ? "http://localhost:3000" : process.env.SOCKET_CLIENT,
     methods: ['GET', 'POST']
   }
 });
-const serialPort = new SerialPort({ path: '/dev/ttyACM0', baudRate: 9600 });
-const parser = serialPort.pipe(new ReadlineParser({ delimiter: '\r\n' }));
+
+// Initialize Serial Port Manager
+const serialPortManager = new SerialPortManager({
+  serialPath: '/dev/ttyACM0',
+  baudRate: 9600,
+  maxReconnectDelay: 30000,
+  isDevelopment: process.env.NODE_ENV === 'development'
+});
 
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
@@ -64,13 +69,26 @@ createTerminus(server, {
   onSignal,
 });
 
+// Configure serial port manager
+serialPortManager.setSocket(socket);
+serialPortManager.setDataCallback(addWeatherReading);
+serialPortManager.initialize();
+
 socket.on('connection', (sock) => {
   console.log(chalk.yellow(`------------ Socket Client Connected: ${sock.id}`));
-});
-serialPort.on('open', () => console.log(chalk.yellow('Serial Port Open')));
-parser.on('data', addWeatherReading);
 
+  // Send current serial port status to newly connected client
+  const status = serialPortManager.getStatus();
+  sock.emit('serial-status', status);
+});
+
+// Cron job for irrigation schedules (every minute)
 cron.schedule('* * * * *', () => ScheduleService.scheduleCheckAndRun(app));
+
+// Cron health check for serial port (every minute as safety net)
+cron.schedule('* * * * *', () => {
+  serialPortManager.performHealthCheck();
+});
 
 const port = process.env.LISTEN_PORT;
 

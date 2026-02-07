@@ -1,5 +1,5 @@
 import React, {useEffect, useState} from 'react';
-import '../css/schedule.css';
+import '../../app/css/schedule.css';
 import {
   Link,
   Route,

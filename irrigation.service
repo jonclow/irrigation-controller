@@ -1,10 +1,17 @@
 [Unit]
 Description=Irrigation controller
-After=multi-user.target
+After=network.target postgresql.service
 
 [Service]
-ExecStart=/bin/bash /home/jon/irrigation-controller/start.sh
+Type=simple
 User=jon
+WorkingDirectory=/home/jon/irrigation-controller
+ExecStart=/bin/bash /home/jon/irrigation-controller/start-systemd.sh
+ExecStop=/bin/bash /home/jon/irrigation-controller/stop.sh
+Restart=always
+RestartSec=10
+StandardOutput=journal
+StandardError=journal
 
 [Install]
 WantedBy=multi-user.target
