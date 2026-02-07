@@ -5,6 +5,23 @@ import airTempIcon from '../assets/air_temp.png';
 import humidIcon from '../assets/humid.png';
 import solarIcon from '../assets/solar.png';
 
+// Import wind speed icons
+import wind2 from '../assets/wind_speed/2.png';
+import wind7 from '../assets/wind_speed/7.png';
+import wind12 from '../assets/wind_speed/12.png';
+import wind17 from '../assets/wind_speed/17.png';
+import wind22 from '../assets/wind_speed/22.png';
+import wind27 from '../assets/wind_speed/27.png';
+import wind32 from '../assets/wind_speed/32.png';
+import wind37 from '../assets/wind_speed/37.png';
+import wind42 from '../assets/wind_speed/42.png';
+import wind47 from '../assets/wind_speed/47.png';
+import wind52 from '../assets/wind_speed/52.png';
+import wind57 from '../assets/wind_speed/57.png';
+import wind62 from '../assets/wind_speed/62.png';
+import wind67 from '../assets/wind_speed/67.png';
+import wind72 from '../assets/wind_speed/72.png';
+
 const iconMap = {
   rain: rainIcon,
   baro: baroIcon,
@@ -14,6 +31,24 @@ const iconMap = {
 };
 
 function WeatherChip({ name, sp, value, rot_deg }) {
+  // Wind speed icon map
+  const windSpeedIcons = {
+    2: wind2,
+    7: wind7,
+    12: wind12,
+    17: wind17,
+    22: wind22,
+    27: wind27,
+    32: wind32,
+    37: wind37,
+    42: wind42,
+    47: wind47,
+    52: wind52,
+    57: wind57,
+    62: wind62,
+    67: wind67,
+    72: wind72
+  };
 
   const getWindVector = (speed) => {
     let speedValue;
@@ -67,8 +102,7 @@ function WeatherChip({ name, sp, value, rot_deg }) {
         speedValue = 2;
     }
 
-    // Use a simple path that works consistently on both server and client
-    return `/app/assets/wind_speed/${speedValue}.png`;
+    return windSpeedIcons[speedValue];
   }
 
   return (
