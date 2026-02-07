@@ -5,7 +5,7 @@
 
 set -e
 
-PI_HOST="jon@192.168.20.59"
+PI_HOST="irrigation"
 PI_DIR="~/irrigation-controller"
 
 # Colors
