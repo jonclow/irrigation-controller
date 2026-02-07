@@ -23,9 +23,9 @@ FROM node:20-alpine
 
 WORKDIR /app
 
-# Install production dependencies only
+# Install all dependencies (SSR server needs them at runtime)
 COPY package*.json ./
-RUN npm ci --production
+RUN npm ci
 
 # Copy built assets from builder
 COPY --from=builder /app/build ./build
