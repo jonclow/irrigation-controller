@@ -38,6 +38,15 @@ function Weather({ socket }) {
       try {
         const weatherData = await apiGet(`${BASE_URL}/weather/getDetailedWeather`);
         setWeather(mergeWeatherData(weatherData));
+
+        // Set initial serial status from API response
+        if (weatherData.serialStatus) {
+          setSerialStatus({
+            connected: weatherData.serialStatus.connected,
+            reconnecting: weatherData.serialStatus.reconnecting || false,
+            attempts: weatherData.serialStatus.attempts || 0
+          });
+        }
       } catch (error) {
         console.error('Failed to fetch weather data:', error);
         // Keep default values when backend is not available

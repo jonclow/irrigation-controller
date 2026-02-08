@@ -17,10 +17,21 @@ module.exports = {
   getDetailedWeather: async function (req, res) {
     try {
       const data = await WeatherService.getDetailedWeather();
-      return res.send(data);
+
+      // Include serial port status for initial frontend load
+      const serialPortManager = req.app.get('serialPortManager');
+      const serialStatus = serialPortManager ? serialPortManager.getStatus() : { connected: false, reconnecting: false, attempts: 0 };
+
+      return res.send({
+        ...data,
+        serialStatus
+      });
     } catch (error) {
       console.error(chalk.red('WeatherController.getDetailedWeather error:'), error.message);
-      return res.status(200).send({ ...DEFAULT_WEATHER });
+      return res.status(200).send({
+        ...DEFAULT_WEATHER,
+        serialStatus: { connected: false, reconnecting: false, attempts: 0 }
+      });
     }
   },
 

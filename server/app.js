@@ -15,9 +15,14 @@ const _ = require("lodash");
 
 const app = express();
 const server = http.createServer(app);
+// Allow multiple origins for CORS (IP and hostname)
+const allowedOrigins = process.env.NODE_ENV === 'development'
+  ? ["http://localhost:3000"]
+  : [process.env.SOCKET_CLIENT, "http://irrigation.local"];
+
 const socket = require('socket.io')(server, {
   cors: {
-    origin: process.env.NODE_ENV === 'development' ? "http://localhost:3000" : process.env.SOCKET_CLIENT,
+    origin: allowedOrigins,
     methods: ['GET', 'POST']
   }
 });
@@ -39,6 +44,7 @@ app.use('/weather', require('./api/routes/weatherRouter'));
 
 app.set('valve_state', ValveService.initValveControl());
 app.set('socket', socket);
+app.set('serialPortManager', serialPortManager);
 
 function onSignal () {
   console.log(chalk.blue('------------ Terminus Starting Cleanup...'));
