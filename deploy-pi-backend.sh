@@ -94,6 +94,10 @@ ssh -t "$PI_HOST" bash << ENDSSH
     echo "Using Node \$(node --version) from \$(which node)"
     npm install
 
+    # Rebuild native modules for current Node version
+    echo -e "\${GREEN}🔧${NC} Rebuilding native modules for Node \$(node --version)..."
+    npm rebuild
+
     echo ""
     echo -e "\${GREEN}🔄${NC} Restarting irrigation service..."
     if sudo systemctl restart irrigation.service; then
