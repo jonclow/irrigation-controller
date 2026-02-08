@@ -88,6 +88,10 @@ ssh -t "$PI_HOST" bash << ENDSSH
 
     echo ""
     echo -e "\${GREEN}📦${NC} Installing backend dependencies..."
+    # Source NVM to use the correct Node version
+    export NVM_DIR="\$HOME/.nvm"
+    [ -s "\$NVM_DIR/nvm.sh" ] && \. "\$NVM_DIR/nvm.sh"
+    echo "Using Node \$(node --version) from \$(which node)"
     npm install
 
     echo ""
