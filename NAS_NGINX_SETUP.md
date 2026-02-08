@@ -30,7 +30,7 @@ The container should be healthy and listening on `127.0.0.1:3000`.
 ### 2. Edit Socket.IO Proxy Config
 
 ```bash
-sudo vim /usr/local/AppCentral/nginx-1.18.0/data/conf/conf.d-available/webserver_proxy_pass.conf
+sudo vi /usr/local/AppCentral/nginx-1.18.0/data/conf/conf.d-available/webserver_proxy_pass.conf
 ```
 
 Content should be:
@@ -49,7 +49,7 @@ location /socket.io/ {
 ### 3. Edit Main HTTP Config
 
 ```bash
-sudo vim /usr/local/AppCentral/nginx-1.18.0/data/conf/sites-available/http.conf
+sudo vi /usr/local/AppCentral/nginx-1.18.0/data/conf/sites-available/http.conf
 ```
 
 Find the `location / {}` block at the end of the server section and change it from empty to:
