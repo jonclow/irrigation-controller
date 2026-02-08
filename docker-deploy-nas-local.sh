@@ -188,6 +188,17 @@ ssh -t "$NAS_HOST" sh << ENDSSH
     rm /tmp/${IMAGE_NAME}-${COMMIT}.tar.gz
     echo ""
 
+    # Clean up dangling images from previous deployments
+    echo -e "\${YELLOW}🧹\${NC} Cleaning up old images..."
+    DANGLING=\$(docker images --filter 'dangling=true' -q --no-trunc)
+    if [ -n "\$DANGLING" ]; then
+        echo "\$DANGLING" | xargs docker rmi 2>/dev/null || true
+        echo -e "\${GREEN}✓\${NC} Old images cleaned"
+    else
+        echo -e "\${GREEN}✓\${NC} No dangling images to clean"
+    fi
+    echo ""
+
     # Stop existing container
     echo -e "\${YELLOW}🛑\${NC} Stopping existing container (if any)..."
     docker compose -f docker-compose.nas.yml down 2>/dev/null || true
