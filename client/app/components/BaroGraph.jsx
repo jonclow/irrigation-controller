@@ -1,4 +1,3 @@
-import React from 'react';
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
 import { useFetchData } from '../hooks/useFetchData';
 import DataStateWrapper from './DataStateWrapper';

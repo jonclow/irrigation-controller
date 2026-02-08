@@ -1,4 +1,3 @@
-import React from 'react';
 import toggleOnIcon from '../assets/toggle-on.png';
 import toggleOffIcon from '../assets/toggle-off.png';
 

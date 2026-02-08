@@ -1,4 +1,3 @@
-import React from 'react';
 import { Outlet, useNavigate } from "react-router";
 import Footer from './Footer';
 

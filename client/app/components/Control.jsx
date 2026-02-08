@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import { useEffect, useState } from 'react';
 import '../css/base.css';
 import DurationSlider from './DurationSlider';
 import Valve from './Valve';

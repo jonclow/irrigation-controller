@@ -1,4 +1,3 @@
-import React from 'react';
 import rainIcon from '../assets/rain.png';
 import baroIcon from '../assets/baro.png';
 import airTempIcon from '../assets/air_temp.png';

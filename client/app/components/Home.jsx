@@ -1,4 +1,4 @@
-import React, {useEffect, useState} from 'react';
+import { useEffect, useState } from 'react';
 import WeatherChip from './WeatherChip';
 import ValveChip from './ValveChip';
 import ConnectionStatus from './ConnectionStatus';

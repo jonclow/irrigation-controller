@@ -1,4 +1,4 @@
-import React, {useEffect, useState} from 'react';
+import { useEffect, useState } from 'react';
 import '../css/schedule.css';
 import {
   Link,
@@ -395,10 +395,9 @@ function Schedule() {
           />
         )}
 
+        {/* Spacer for fixed footer */}
+        <div style={{ height: '60px' }} />
       </div>
-
-      {/* Spacer for fixed footer */}
-      <div style={{ height: '60px' }} />
     );
   }
 

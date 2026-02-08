@@ -1,4 +1,3 @@
-import React from 'react';
 
 /**
  * Reusable component for handling loading, error, and empty states

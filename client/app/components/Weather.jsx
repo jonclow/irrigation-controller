@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import { useEffect, useState } from 'react';
 import '../css/base.css';
 import WeatherChip from './WeatherChip';
 import ConnectionStatus from './ConnectionStatus';
