@@ -6,7 +6,6 @@ import {
   Routes,
   useNavigate
 } from "react-router";
-import _ from 'lodash';
 import AddOrUpdateSchedule from "./AddOrUpdateSchedule";
 import Toast from "./Toast";
 import { apiGet, apiPut, apiDelete } from '../utils/api';
@@ -21,7 +20,7 @@ function Schedule() {
   const BASE_URL = import.meta.env.VITE_BASE_URL || 'http://localhost:3000';
 
   let navigate = useNavigate();
-  const valveConfig = _.zipObject(_.map(valves, 'id'), _.map(valves, 'name'));
+  const valveConfig = Object.fromEntries(valves.map(v => [v.id, v.name]));
   const daysOfWeek = {
     0: 'Su',
     1: 'Mo',
@@ -72,8 +71,8 @@ function Schedule() {
           active: data.get('active') === 'active',
           name: data.get('schedule_name'),
           start: data.get('start_time'),
-          days: _.map(data.getAll('selected_days'), (d) => parseInt(d, 10)),
-          valves: _.map(data.getAll('selected_valves'), (v) => parseInt(v, 10)),
+          days: data.getAll('selected_days').map(d => parseInt(d, 10)),
+          valves: data.getAll('selected_valves').map(v => parseInt(v, 10)),
           duration: parseInt(data.get('duration'), 10)
         },
       });
@@ -282,7 +281,7 @@ function Schedule() {
                   flexWrap: 'wrap',
                   gap: '6px'
                 }}>
-                  {_.map(schedule.days, (dayInt) => (
+                  {schedule.days.map(dayInt => (
                     <span key={dayInt} style={{
                       padding: '4px 10px',
                       background: 'rgba(6, 182, 212, 0.15)',
@@ -303,7 +302,7 @@ function Schedule() {
                   flexWrap: 'wrap',
                   gap: '6px'
                 }}>
-                  {_.map(schedule.valves, (valveID) => (
+                  {schedule.valves.map(valveID => (
                     <span key={valveID} style={{
                       padding: '4px 10px',
                       background: 'rgba(16, 185, 129, 0.15)',
@@ -397,6 +396,9 @@ function Schedule() {
         )}
 
       </div>
+
+      {/* Spacer for fixed footer */}
+      <div style={{ height: '60px' }} />
     );
   }
 

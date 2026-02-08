@@ -88,7 +88,7 @@ ssh -t "$PI_HOST" bash << ENDSSH
 
     echo ""
     echo -e "\${GREEN}📦${NC} Installing backend dependencies..."
-    npm install --production
+    npm install
 
     echo ""
     echo -e "\${GREEN}🔄${NC} Restarting irrigation service..."

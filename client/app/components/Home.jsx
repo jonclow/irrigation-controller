@@ -45,6 +45,15 @@ function Home({ socket }) {
         setValves(valvesData);
         setWeather(mergeWeatherData(weatherData));
 
+        // Set initial serial status from API response if available
+        if (weatherData.serialStatus) {
+          setSerialStatus({
+            connected: weatherData.serialStatus.connected,
+            reconnecting: weatherData.serialStatus.reconnecting || false,
+            attempts: weatherData.serialStatus.attempts || 0
+          });
+        }
+
       } catch (error) {
         console.error('Failed to load home data:', error);
         setError(error);
