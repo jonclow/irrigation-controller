@@ -108,7 +108,9 @@ function WeatherChip({ name, sp, value, rot_deg }) {
     <div className="chip">
       {
         name === 'wind' ?
-          <img src={getWindVector(sp)} alt={`${name}`} width="80" height="80" style={{ transform: `rotate(${rot_deg})` }} />
+          <div className="chip-icon-frame">
+            <img src={getWindVector(sp)} alt={`${name}`} width="80" height="80" style={{ transform: `rotate(${rot_deg})` }} />
+          </div>
           : <img src={iconMap[name]} alt={`${name}`} width="80" height="80" />
       }
       {value}
