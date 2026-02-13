@@ -64,6 +64,18 @@ fi
 echo -e "${GREEN}✓${NC} Connected to Pi"
 echo ""
 
+# Sync .env file if it exists (not tracked in git)
+if [ -f ".env" ]; then
+    echo -e "${GREEN}🔐${NC} Syncing .env file to Pi..."
+    scp -q .env "$PI_HOST:$PI_DIR/.env"
+    if [ $? -eq 0 ]; then
+        echo -e "${GREEN}✓${NC} .env file synced"
+    else
+        echo -e "${YELLOW}⚠${NC}  Warning: Failed to sync .env file"
+    fi
+    echo ""
+fi
+
 # Deploy backend to Pi
 echo -e "${GREEN}🚀${NC} Starting backend deployment..."
 echo ""
