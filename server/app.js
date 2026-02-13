@@ -18,7 +18,13 @@ const server = http.createServer(app);
 // Allow multiple origins for CORS (IP and hostname)
 const allowedOrigins = process.env.NODE_ENV === 'development'
   ? ["http://localhost:3000"]
-  : [process.env.SOCKET_CLIENT, "http://irrigation.local", "http://irrigation.home", "http://irrigation"];
+  : [
+      process.env.SOCKET_CLIENT,
+      process.env.ENV_MONITOR_CLIENT,
+      "http://irrigation.local",
+      "http://irrigation.home",
+      "http://irrigation"
+    ];
 
 const socket = require('socket.io')(server, {
   cors: {
