@@ -7,7 +7,7 @@
 set -e
 
 NAS_HOST="nas"
-DEPLOY_DIR="/volume1/Web/irrigation-frontend"
+DEPLOY_DIR="/volume1/home/jonclow/irrigation"
 IMAGE_NAME="irrigation-frontend"
 IMAGE_TAG="latest"
 FULL_IMAGE="${IMAGE_NAME}:${IMAGE_TAG}"
