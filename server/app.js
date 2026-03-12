@@ -47,6 +47,7 @@ app.use(cors());
 app.use('/schedule', require('./api/routes/scheduleRouter'));
 app.use('/valve', require('./api/routes/valveRouter'));
 app.use('/weather', require('./api/routes/weatherRouter'));
+app.use('/iaq', require('./api/routes/iaqRouter'));
 
 app.set('valve_state', ValveService.initValveControl());
 app.set('socket', socket);
