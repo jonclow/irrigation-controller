@@ -3,6 +3,71 @@ const chalk = require('chalk');
 const dbErrorTracker = require('../utils/dbErrorTracker');
 
 const IAQService = {
+  getLatestReading: async function () {
+    const operationName = 'iaq_get_latest';
+    const client = new Client();
+
+    try {
+      await client.connect();
+
+      const result = await client.query(`
+        SELECT
+          timestamp,
+          TO_CHAR(timestamp AT TIME ZONE 'pacific/auckland', 'DD Mon HH24:MI') AS date_time,
+          co2_ppm, iaq, iaq_accuracy, eco2_ppm, bvoc_ppm,
+          pm1_0, pm2_5, pm4, pm10,
+          sht41_temp_c, sht41_humidity_rh,
+          pressure_hpa
+        FROM environmental_readings
+        ORDER BY timestamp DESC
+        LIMIT 1
+      `);
+
+      dbErrorTracker.recordSuccess(operationName);
+      return result.rows[0] || null;
+
+    } catch (error) {
+      console.error(chalk.red(`${operationName} failed:`), error.message);
+      const shouldExit = dbErrorTracker.recordFailure(operationName, 'read', error);
+      if (shouldExit) process.exit(1);
+      throw error;
+
+    } finally {
+      await client.end();
+    }
+  },
+
+  getHistory: async function (hours) {
+    const operationName = 'iaq_get_history';
+    const client = new Client();
+
+    try {
+      await client.connect();
+
+      const result = await client.query(`
+        SELECT
+          timestamp,
+          TO_CHAR(timestamp AT TIME ZONE 'pacific/auckland', 'DD Mon HH24:MI') AS date_time,
+          co2_ppm, iaq, pm2_5, sht41_temp_c, sht41_humidity_rh
+        FROM environmental_readings
+        WHERE timestamp >= NOW() - ($1::int * INTERVAL '1 hour')
+        ORDER BY timestamp ASC
+      `, [hours]);
+
+      dbErrorTracker.recordSuccess(operationName);
+      return result.rows;
+
+    } catch (error) {
+      console.error(chalk.red(`${operationName} failed:`), error.message);
+      const shouldExit = dbErrorTracker.recordFailure(operationName, 'read', error);
+      if (shouldExit) process.exit(1);
+      throw error;
+
+    } finally {
+      await client.end();
+    }
+  },
+
   insertReading: async function (data) {
     const operationName = 'iaq_insert';
     const client = new Client();

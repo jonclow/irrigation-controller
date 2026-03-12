@@ -5,6 +5,7 @@ export default [
     index("routes/home.tsx"),
     route("/control", "routes/control.tsx"),
     route("/schedule/*", "routes/schedule.tsx"),
+    route("/iaq", "routes/iaq.tsx"),
     route("/weather", "routes/weather.tsx", [
       route("wind", "routes/weather.wind.tsx"),
       route("baro", "routes/weather.baro.tsx"),

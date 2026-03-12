@@ -7,7 +7,7 @@ export default function Layout() {
   return (
     <>
       <div className="pb-16 w-full max-w-full overflow-x-hidden">
-        <nav className="grid grid-cols-2 md:grid-cols-4 gap-2 sm:gap-3 px-4 sm:px-6 md:px-8 pt-4 sm:pt-6 pb-3 sm:pb-4 mb-4 sm:mb-6" style={{ fontFamily: 'var(--font-display)' }}>
+        <nav className="grid grid-cols-3 md:grid-cols-5 gap-2 sm:gap-3 px-4 sm:px-6 md:px-8 pt-4 sm:pt-6 pb-3 sm:pb-4 mb-4 sm:mb-6" style={{ fontFamily: 'var(--font-display)' }}>
           <button
             onClick={() => navigate('/')}
             className="h-12 sm:h-14 rounded-2xl font-semibold text-sm sm:text-base tracking-wide transition-all duration-300 hover:scale-105 active:scale-95"
@@ -55,6 +55,18 @@ export default function Layout() {
             }}
           >
             Weather
+          </button>
+          <button
+            onClick={() => navigate('/iaq')}
+            className="h-12 sm:h-14 rounded-2xl font-semibold text-sm sm:text-base tracking-wide transition-all duration-300 hover:scale-105 active:scale-95"
+            style={{
+              background: 'linear-gradient(135deg, rgba(167, 139, 250, 0.15) 0%, rgba(124, 58, 237, 0.1) 100%)',
+              border: '1px solid rgba(167, 139, 250, 0.3)',
+              color: 'var(--color-air)',
+              boxShadow: '0 4px 16px rgba(167, 139, 250, 0.2)',
+            }}
+          >
+            Air Quality
           </button>
         </nav>
         <Outlet />
