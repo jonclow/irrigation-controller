@@ -1,5 +1,4 @@
 import { useEffect, useState } from 'react';
-import WeatherChip from './WeatherChip';
 import ValveChip from './ValveChip';
 import ConnectionStatus from './ConnectionStatus';
 import '../css/base.css';
@@ -27,6 +26,58 @@ function pm25Status(val) {
   if (val < 35) return { label: 'Moderate', color: 'var(--color-sun)' };
   return { label: 'Poor', color: '#f87171' };
 }
+
+function OutdoorChip({ label, value, unit }) {
+  return (
+    <div style={{
+      background: 'linear-gradient(135deg, var(--color-bg-elevated) 0%, rgba(26, 35, 50, 0.8) 100%)',
+      borderRadius: '16px',
+      padding: 'clamp(14px, 3vw, 20px)',
+      border: '1px solid rgba(6, 182, 212, 0.2)',
+      boxShadow: 'var(--shadow-card)'
+    }}>
+      <div style={{ fontFamily: 'var(--font-body)', fontSize: '11px', color: 'var(--color-text-muted)', textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: '8px' }}>{label}</div>
+      <div style={{ fontFamily: 'var(--font-data)', fontSize: 'clamp(18px, 4vw, 26px)', color: 'var(--color-water-light)', fontWeight: '700' }}>
+        {value ?? '–'}
+        {unit && <span style={{ fontSize: '12px', color: 'var(--color-text-muted)', marginLeft: '4px', fontWeight: '400' }}>{unit}</span>}
+      </div>
+    </div>
+  );
+}
+
+function IaqChip({ label, value, unit, status, coloredBg = false }) {
+  const bg = coloredBg && status
+    ? `linear-gradient(135deg, ${status.color}28 0%, rgba(26, 35, 50, 0.9) 100%)`
+    : 'linear-gradient(135deg, var(--color-bg-elevated) 0%, rgba(26, 35, 50, 0.8) 100%)';
+  const border = coloredBg && status
+    ? `1px solid ${status.color}50`
+    : '1px solid rgba(167, 139, 250, 0.2)';
+  const valueColor = coloredBg && status ? status.color : 'var(--color-air)';
+  return (
+    <div style={{ background: bg, borderRadius: '16px', padding: 'clamp(14px, 3vw, 20px)', border, boxShadow: 'var(--shadow-card)' }}>
+      <div style={{ fontFamily: 'var(--font-body)', fontSize: '11px', color: 'var(--color-text-muted)', textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: '8px' }}>{label}</div>
+      <div style={{ fontFamily: 'var(--font-data)', fontSize: 'clamp(18px, 4vw, 26px)', color: valueColor, fontWeight: '700' }}>
+        {value ?? '–'}
+        {unit && <span style={{ fontSize: '12px', color: 'var(--color-text-muted)', marginLeft: '4px', fontWeight: '400' }}>{unit}</span>}
+      </div>
+      {!coloredBg && status && (
+        <div style={{ display: 'flex', alignItems: 'center', gap: '6px', marginTop: '6px' }}>
+          <span style={{ width: '8px', height: '8px', borderRadius: '50%', background: status.color, display: 'inline-block' }} />
+          <span style={{ fontSize: '11px', color: status.color }}>{status.label}</span>
+        </div>
+      )}
+    </div>
+  );
+}
+
+const sectionHeading = {
+  fontFamily: 'var(--font-display)',
+  fontSize: 'clamp(18px, 4.5vw, 28px)',
+  fontWeight: '700',
+  marginBottom: 'clamp(12px, 3vw, 16px)',
+  color: 'var(--color-text-primary)',
+  letterSpacing: '-0.01em'
+};
 
 function Home({ socket }) {
   const [valves, setValves] = useState([]);
@@ -74,7 +125,6 @@ function Home({ socket }) {
         setWeather(mergeWeatherData(weatherData));
         setIaq(iaqData);
 
-        // Set initial serial status from API response if available
         if (weatherData.serialStatus) {
           setSerialStatus({
             connected: weatherData.serialStatus.connected,
@@ -86,7 +136,6 @@ function Home({ socket }) {
       } catch (error) {
         console.error('Failed to load home data:', error);
         setError(error);
-        // Keep defaults to maintain UI functionality
         setValves([]);
         setWeather(defaultWeather);
       } finally {
@@ -164,121 +213,54 @@ function Home({ socket }) {
             />
           </div>
 
+          <h2 style={sectionHeading}>Outside Environment</h2>
           <div className="grid grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4 md:gap-5 mb-6 sm:mb-8">
-            <WeatherChip key={'rain'} name={'rain'} value={`${Math.round(weather.rain * 6)} mm/hr`}/>
-            <WeatherChip key={'baro'} name={'baro'} value={`${weather.baro}`}/>
-            <WeatherChip key={'air_temp'} name={'air_temp'} value={`${weather.air_temp} C`}/>
-            <WeatherChip key={'humid'} name={'humid'} value={`${weather.humid} %`}/>
-            <WeatherChip key={'solar'} name={'solar'} value={`${weather.solar}`}/>
-            <WeatherChip key={'wind'} name={'wind'} sp={weather.wind_mean.sp} value={`${weather.wind_mean.sp} kt`}
-                         rot_deg={`${weather.wind_mean.dir + 90}deg`}/>
+            <OutdoorChip label="Rain" value={Math.round(weather.rain * 6)} unit="mm/hr" />
+            <OutdoorChip label="Barometric" value={weather.baro} unit="hPa" />
+            <OutdoorChip label="Air Temp" value={weather.air_temp} unit="°C" />
+            <OutdoorChip label="Humidity" value={weather.humid} unit="%" />
+            <OutdoorChip label="Solar" value={weather.solar} />
+            <OutdoorChip label="Wind" value={weather.wind_mean.sp} unit="kt" />
           </div>
 
           {iaq && (
             <>
-              <h2 style={{
-                fontFamily: 'var(--font-display)',
-                fontSize: 'clamp(18px, 4.5vw, 28px)',
-                fontWeight: '700',
-                marginBottom: 'clamp(12px, 3vw, 16px)',
-                color: 'var(--color-text-primary)',
-                letterSpacing: '-0.01em'
-              }}>
-                Indoor Air Quality
-              </h2>
-              <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4 md:gap-5 mb-6 sm:mb-8">
-                {/* CO2 */}
-                <div style={{
-                  background: 'linear-gradient(135deg, var(--color-bg-elevated) 0%, rgba(26, 35, 50, 0.8) 100%)',
-                  borderRadius: '16px',
-                  padding: 'clamp(14px, 3vw, 20px)',
-                  border: '1px solid rgba(167, 139, 250, 0.2)',
-                  boxShadow: 'var(--shadow-card)'
-                }}>
-                  <div style={{ fontFamily: 'var(--font-body)', fontSize: '11px', color: 'var(--color-text-muted)', textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: '8px' }}>CO₂</div>
-                  <div style={{ fontFamily: 'var(--font-data)', fontSize: 'clamp(18px, 4vw, 26px)', color: 'var(--color-air)', fontWeight: '700' }}>
-                    {iaq.co2_ppm != null ? Math.round(iaq.co2_ppm) : '–'}
-                    <span style={{ fontSize: '12px', color: 'var(--color-text-muted)', marginLeft: '4px', fontWeight: '400' }}>ppm</span>
-                  </div>
-                  {co2Status(iaq.co2_ppm) && (
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '6px', marginTop: '6px' }}>
-                      <span style={{ width: '8px', height: '8px', borderRadius: '50%', background: co2Status(iaq.co2_ppm).color, display: 'inline-block' }} />
-                      <span style={{ fontSize: '11px', color: co2Status(iaq.co2_ppm).color }}>{co2Status(iaq.co2_ppm).label}</span>
-                    </div>
-                  )}
-                </div>
-                {/* IAQ Score */}
-                <div style={{
-                  background: 'linear-gradient(135deg, var(--color-bg-elevated) 0%, rgba(26, 35, 50, 0.8) 100%)',
-                  borderRadius: '16px',
-                  padding: 'clamp(14px, 3vw, 20px)',
-                  border: '1px solid rgba(167, 139, 250, 0.2)',
-                  boxShadow: 'var(--shadow-card)'
-                }}>
-                  <div style={{ fontFamily: 'var(--font-body)', fontSize: '11px', color: 'var(--color-text-muted)', textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: '8px' }}>IAQ Score</div>
-                  <div style={{ fontFamily: 'var(--font-data)', fontSize: 'clamp(18px, 4vw, 26px)', color: 'var(--color-air)', fontWeight: '700' }}>
-                    {iaq.iaq != null ? Math.round(iaq.iaq) : '–'}
-                    <span style={{ fontSize: '12px', color: 'var(--color-text-muted)', marginLeft: '4px', fontWeight: '400' }}>/500</span>
-                  </div>
-                  {iaqStatus(iaq.iaq) && (
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '6px', marginTop: '6px' }}>
-                      <span style={{ width: '8px', height: '8px', borderRadius: '50%', background: iaqStatus(iaq.iaq).color, display: 'inline-block' }} />
-                      <span style={{ fontSize: '11px', color: iaqStatus(iaq.iaq).color }}>{iaqStatus(iaq.iaq).label}</span>
-                    </div>
-                  )}
-                </div>
-                {/* PM2.5 */}
-                <div style={{
-                  background: 'linear-gradient(135deg, var(--color-bg-elevated) 0%, rgba(26, 35, 50, 0.8) 100%)',
-                  borderRadius: '16px',
-                  padding: 'clamp(14px, 3vw, 20px)',
-                  border: '1px solid rgba(167, 139, 250, 0.2)',
-                  boxShadow: 'var(--shadow-card)'
-                }}>
-                  <div style={{ fontFamily: 'var(--font-body)', fontSize: '11px', color: 'var(--color-text-muted)', textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: '8px' }}>PM2.5</div>
-                  <div style={{ fontFamily: 'var(--font-data)', fontSize: 'clamp(18px, 4vw, 26px)', color: 'var(--color-air)', fontWeight: '700' }}>
-                    {iaq.pm2_5 != null ? Number(iaq.pm2_5).toFixed(1) : '–'}
-                    <span style={{ fontSize: '12px', color: 'var(--color-text-muted)', marginLeft: '4px', fontWeight: '400' }}>µg/m³</span>
-                  </div>
-                  {pm25Status(iaq.pm2_5) && (
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '6px', marginTop: '6px' }}>
-                      <span style={{ width: '8px', height: '8px', borderRadius: '50%', background: pm25Status(iaq.pm2_5).color, display: 'inline-block' }} />
-                      <span style={{ fontSize: '11px', color: pm25Status(iaq.pm2_5).color }}>{pm25Status(iaq.pm2_5).label}</span>
-                    </div>
-                  )}
-                </div>
-                {/* Temp / Humidity */}
-                <div style={{
-                  background: 'linear-gradient(135deg, var(--color-bg-elevated) 0%, rgba(26, 35, 50, 0.8) 100%)',
-                  borderRadius: '16px',
-                  padding: 'clamp(14px, 3vw, 20px)',
-                  border: '1px solid rgba(167, 139, 250, 0.2)',
-                  boxShadow: 'var(--shadow-card)'
-                }}>
-                  <div style={{ fontFamily: 'var(--font-body)', fontSize: '11px', color: 'var(--color-text-muted)', textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: '8px' }}>Indoor Temp / Humidity</div>
-                  <div style={{ fontFamily: 'var(--font-data)', fontSize: 'clamp(16px, 3.5vw, 22px)', color: 'var(--color-air)', fontWeight: '700' }}>
-                    {iaq.sht41_temp_c != null ? Number(iaq.sht41_temp_c).toFixed(1) : '–'}
-                    <span style={{ fontSize: '12px', color: 'var(--color-text-muted)', marginLeft: '2px', fontWeight: '400' }}>°C</span>
-                    <span style={{ fontSize: '14px', color: 'var(--color-text-muted)', margin: '0 6px' }}>/</span>
-                    {iaq.sht41_humidity_rh != null ? Math.round(iaq.sht41_humidity_rh) : '–'}
-                    <span style={{ fontSize: '12px', color: 'var(--color-text-muted)', marginLeft: '2px', fontWeight: '400' }}>%</span>
-                  </div>
-                </div>
+              <h2 style={sectionHeading}>Indoor Air Quality</h2>
+              <div className="grid grid-cols-2 lg:grid-cols-5 gap-3 sm:gap-4 md:gap-5 mb-6 sm:mb-8">
+                <IaqChip
+                  label="IAQ Score"
+                  value={iaq.iaq != null ? Math.round(iaq.iaq) : null}
+                  unit="/500"
+                  status={iaqStatus(iaq.iaq)}
+                  coloredBg
+                />
+                <IaqChip
+                  label="CO₂"
+                  value={iaq.co2_ppm != null ? Math.round(iaq.co2_ppm) : null}
+                  unit="ppm"
+                  status={co2Status(iaq.co2_ppm)}
+                />
+                <IaqChip
+                  label="PM2.5"
+                  value={iaq.pm2_5 != null ? Number(iaq.pm2_5).toFixed(1) : null}
+                  unit="µg/m³"
+                  status={pm25Status(iaq.pm2_5)}
+                />
+                <IaqChip
+                  label="Indoor Temp"
+                  value={iaq.sht41_temp_c != null ? Number(iaq.sht41_temp_c).toFixed(1) : null}
+                  unit="°C"
+                />
+                <IaqChip
+                  label="Humidity"
+                  value={iaq.sht41_humidity_rh != null ? Math.round(iaq.sht41_humidity_rh) : null}
+                  unit="%"
+                />
               </div>
             </>
           )}
 
-          <h2 style={{
-            fontFamily: 'var(--font-display)',
-            fontSize: 'clamp(18px, 4.5vw, 28px)',
-            fontWeight: '700',
-            marginBottom: 'clamp(12px, 3vw, 16px)',
-            color: 'var(--color-text-primary)',
-            letterSpacing: '-0.01em'
-          }}>
-            Valve Controls
-          </h2>
-
+          <h2 style={sectionHeading}>Valve Controls</h2>
           <div className={'grid grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4 md:gap-5'}>
             {valves.map((value) => (<ValveChip key={value.name} name={value.name} state={value.status}/>))}
           </div>
