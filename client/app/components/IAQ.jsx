@@ -17,51 +17,59 @@ const CO2_THRESHOLDS = [
   { max: Infinity, label: 'Bad',      color: '#f87171' },
 ];
 
+// BSEC IAQ scale: 0-50 Excellent, 51-100 Good, 101-150 Lightly polluted,
+//                 151-200 Moderately polluted, 201-300 Heavily polluted, 301+ Severely polluted
 const IAQ_THRESHOLDS = [
-  { max: 50,       label: 'Good',     color: 'var(--color-growth)' },
-  { max: 100,      label: 'Moderate', color: 'var(--color-sun)' },
-  { max: 200,      label: 'Poor',     color: '#fb923c' },
-  { max: Infinity, label: 'Bad',      color: '#f87171' },
+  { max: 50,       label: 'Excellent', color: '#34d399' },
+  { max: 100,      label: 'Good',      color: 'var(--color-growth)' },
+  { max: 200,      label: 'Moderate',  color: 'var(--color-sun)' },
+  { max: 300,      label: 'Poor',      color: '#fb923c' },
+  { max: Infinity, label: 'Bad',       color: '#f87171' },
 ];
 
+// WHO 24h guidelines
 const PM25_THRESHOLDS = [
-  { max: 12,       label: 'Good',     color: 'var(--color-growth)' },
+  { max: 15,       label: 'Good',     color: 'var(--color-growth)' },
   { max: 35,       label: 'Moderate', color: 'var(--color-sun)' },
   { max: Infinity, label: 'Poor',     color: '#f87171' },
 ];
 
 const PM10_THRESHOLDS = [
-  { max: 54,       label: 'Good',     color: 'var(--color-growth)' },
-  { max: 154,      label: 'Moderate', color: 'var(--color-sun)' },
+  { max: 50,       label: 'Good',     color: 'var(--color-growth)' },
+  { max: 150,      label: 'Moderate', color: 'var(--color-sun)' },
+  { max: Infinity, label: 'Poor',     color: '#f87171' },
+];
+
+// BSEC Breath VOC equivalent (calibrated range 0.5–15 ppm)
+const BVOC_THRESHOLDS = [
+  { max: 1.5,      label: 'Good',     color: 'var(--color-growth)' },
+  { max: 3.0,      label: 'Moderate', color: 'var(--color-sun)' },
   { max: Infinity, label: 'Poor',     color: '#f87171' },
 ];
 
 function StatusDot({ status }) {
-  if (!status) return null;
   return (
-    <div style={{ display: 'flex', alignItems: 'center', gap: '6px', marginTop: '6px' }}>
-      <span style={{ width: '8px', height: '8px', borderRadius: '50%', background: status.color, display: 'inline-block', flexShrink: 0 }} />
-      <span style={{ fontSize: '11px', color: status.color }}>{status.label}</span>
+    <div style={{ display: 'flex', alignItems: 'center', gap: '6px', marginTop: '6px', minHeight: '16px' }}>
+      {status && (
+        <>
+          <span style={{ width: '8px', height: '8px', borderRadius: '50%', background: status.color, display: 'inline-block', flexShrink: 0 }} />
+          <span style={{ fontSize: '11px', color: status.color }}>{status.label}</span>
+        </>
+      )}
     </div>
   );
 }
 
-function MetricChip({ label, value, unit, status, coloredBg = false }) {
-  const bg = coloredBg && status
-    ? `linear-gradient(135deg, ${status.color}28 0%, rgba(26, 35, 50, 0.9) 100%)`
-    : 'linear-gradient(135deg, var(--color-bg-elevated) 0%, rgba(26, 35, 50, 0.8) 100%)';
-  const border = coloredBg && status
-    ? `1px solid ${status.color}50`
-    : '1px solid rgba(167, 139, 250, 0.2)';
-  const valueColor = coloredBg && status ? status.color : 'var(--color-air)';
+function MetricChip({ label, value, unit, status }) {
+  const valueColor = status ? status.color : 'var(--color-air)';
   return (
-    <div style={{ background: bg, borderRadius: '16px', padding: 'clamp(14px, 3vw, 20px)', border, boxShadow: 'var(--shadow-card)' }}>
+    <div style={{ background: 'linear-gradient(135deg, var(--color-bg-elevated) 0%, rgba(26, 35, 50, 0.8) 100%)', borderRadius: '16px', padding: 'clamp(14px, 3vw, 20px)', border: '1px solid rgba(167, 139, 250, 0.2)', boxShadow: 'var(--shadow-card)' }}>
       <div style={{ fontFamily: 'var(--font-body)', fontSize: '11px', color: 'var(--color-text-muted)', textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: '8px' }}>{label}</div>
       <div style={{ fontFamily: 'var(--font-data)', fontSize: 'clamp(18px, 4vw, 26px)', color: valueColor, fontWeight: '700' }}>
         {value ?? '–'}
         {unit && <span style={{ fontSize: '12px', color: 'var(--color-text-muted)', marginLeft: '4px', fontWeight: '400' }}>{unit}</span>}
       </div>
-      {!coloredBg && <StatusDot status={status} />}
+      <StatusDot status={status} />
     </div>
   );
 }
@@ -138,10 +146,10 @@ function IAQ({ socket }) {
         <>
           {/* IAQ + CO2 group */}
           <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4 md:gap-5 mb-4">
-            <MetricChip label="IAQ Score"    value={r.iaq       != null ? Math.round(r.iaq)                   : null} unit="/500" status={statusFor(r.iaq,       IAQ_THRESHOLDS)} coloredBg />
+            <MetricChip label="IAQ Score"    value={r.iaq       != null ? Math.round(r.iaq)                   : null} unit="/500" status={statusFor(r.iaq,       IAQ_THRESHOLDS)} />
             <MetricChip label="CO₂"          value={r.co2_ppm   != null ? Math.round(r.co2_ppm)               : null} unit="ppm"   status={statusFor(r.co2_ppm,   CO2_THRESHOLDS)} />
             <MetricChip label="eCO₂"         value={r.eco2_ppm  != null ? Math.round(r.eco2_ppm)              : null} unit="ppm" />
-            <MetricChip label="bVOC"         value={r.bvoc_ppm  != null ? Number(r.bvoc_ppm).toFixed(2)       : null} unit="ppm" />
+            <MetricChip label="bVOC"         value={r.bvoc_ppm  != null ? Number(r.bvoc_ppm).toFixed(2)       : null} unit="ppm"   status={statusFor(r.bvoc_ppm,  BVOC_THRESHOLDS)} />
           </div>
 
           {/* PM group */}
@@ -172,10 +180,11 @@ function IAQ({ socket }) {
           }}>
             <span style={{ fontWeight: '600', marginRight: '4px' }}>Thresholds:</span>
             {[
-              { label: 'Good',     color: 'var(--color-growth)' },
-              { label: 'Moderate', color: 'var(--color-sun)' },
-              { label: 'Poor',     color: '#fb923c' },
-              { label: 'Bad',      color: '#f87171' },
+              { label: 'Excellent', color: '#34d399' },
+              { label: 'Good',      color: 'var(--color-growth)' },
+              { label: 'Moderate',  color: 'var(--color-sun)' },
+              { label: 'Poor',      color: '#fb923c' },
+              { label: 'Bad',       color: '#f87171' },
             ].map(t => (
               <span key={t.label} style={{ display: 'flex', alignItems: 'center', gap: '5px' }}>
                 <span style={{ width: '8px', height: '8px', borderRadius: '50%', background: t.color, display: 'inline-block' }} />

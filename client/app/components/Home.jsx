@@ -14,20 +14,21 @@ function co2Status(ppm) {
 
 function iaqStatus(score) {
   if (score == null) return null;
-  if (score <= 50) return { label: 'Good', color: 'var(--color-growth)' };
-  if (score <= 100) return { label: 'Moderate', color: 'var(--color-sun)' };
-  if (score <= 200) return { label: 'Poor', color: '#fb923c' };
+  if (score <= 50)  return { label: 'Excellent', color: '#34d399' };
+  if (score <= 100) return { label: 'Good',      color: 'var(--color-growth)' };
+  if (score <= 200) return { label: 'Moderate',  color: 'var(--color-sun)' };
+  if (score <= 300) return { label: 'Poor',       color: '#fb923c' };
   return { label: 'Bad', color: '#f87171' };
 }
 
 function pm25Status(val) {
   if (val == null) return null;
-  if (val < 12) return { label: 'Good', color: 'var(--color-growth)' };
+  if (val < 15) return { label: 'Good', color: 'var(--color-growth)' };
   if (val < 35) return { label: 'Moderate', color: 'var(--color-sun)' };
   return { label: 'Poor', color: '#f87171' };
 }
 
-function OutdoorChip({ label, value, unit }) {
+function OutdoorChip({ label, value, unit, direction }) {
   return (
     <div style={{
       background: 'linear-gradient(135deg, var(--color-bg-elevated) 0%, rgba(26, 35, 50, 0.8) 100%)',
@@ -41,26 +42,25 @@ function OutdoorChip({ label, value, unit }) {
         {value ?? '–'}
         {unit && <span style={{ fontSize: '12px', color: 'var(--color-text-muted)', marginLeft: '4px', fontWeight: '400' }}>{unit}</span>}
       </div>
+      {direction != null && (
+        <div style={{ fontFamily: 'var(--font-data)', fontSize: '13px', color: 'var(--color-text-muted)', marginTop: '4px' }}>
+          {String(Math.round(direction)).padStart(3, '0')}°
+        </div>
+      )}
     </div>
   );
 }
 
-function IaqChip({ label, value, unit, status, coloredBg = false }) {
-  const bg = coloredBg && status
-    ? `linear-gradient(135deg, ${status.color}28 0%, rgba(26, 35, 50, 0.9) 100%)`
-    : 'linear-gradient(135deg, var(--color-bg-elevated) 0%, rgba(26, 35, 50, 0.8) 100%)';
-  const border = coloredBg && status
-    ? `1px solid ${status.color}50`
-    : '1px solid rgba(167, 139, 250, 0.2)';
-  const valueColor = coloredBg && status ? status.color : 'var(--color-air)';
+function IaqChip({ label, value, unit, status }) {
+  const valueColor = status ? status.color : 'var(--color-air)';
   return (
-    <div style={{ background: bg, borderRadius: '16px', padding: 'clamp(14px, 3vw, 20px)', border, boxShadow: 'var(--shadow-card)' }}>
+    <div style={{ background: 'linear-gradient(135deg, var(--color-bg-elevated) 0%, rgba(26, 35, 50, 0.8) 100%)', borderRadius: '16px', padding: 'clamp(14px, 3vw, 20px)', border: '1px solid rgba(167, 139, 250, 0.2)', boxShadow: 'var(--shadow-card)' }}>
       <div style={{ fontFamily: 'var(--font-body)', fontSize: '11px', color: 'var(--color-text-muted)', textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: '8px' }}>{label}</div>
       <div style={{ fontFamily: 'var(--font-data)', fontSize: 'clamp(18px, 4vw, 26px)', color: valueColor, fontWeight: '700' }}>
         {value ?? '–'}
         {unit && <span style={{ fontSize: '12px', color: 'var(--color-text-muted)', marginLeft: '4px', fontWeight: '400' }}>{unit}</span>}
       </div>
-      {!coloredBg && status && (
+      {status && (
         <div style={{ display: 'flex', alignItems: 'center', gap: '6px', marginTop: '6px' }}>
           <span style={{ width: '8px', height: '8px', borderRadius: '50%', background: status.color, display: 'inline-block' }} />
           <span style={{ fontSize: '11px', color: status.color }}>{status.label}</span>
@@ -220,7 +220,7 @@ function Home({ socket }) {
             <OutdoorChip label="Air Temp" value={weather.air_temp} unit="°C" />
             <OutdoorChip label="Humidity" value={weather.humid} unit="%" />
             <OutdoorChip label="Solar" value={weather.solar} />
-            <OutdoorChip label="Wind" value={weather.wind_mean.sp} unit="kt" />
+            <OutdoorChip label="Wind" value={weather.wind_mean.sp} unit="kt" direction={weather.wind_mean.dir} />
           </div>
 
           {iaq && (
@@ -232,7 +232,6 @@ function Home({ socket }) {
                   value={iaq.iaq != null ? Math.round(iaq.iaq) : null}
                   unit="/500"
                   status={iaqStatus(iaq.iaq)}
-                  coloredBg
                 />
                 <IaqChip
                   label="CO₂"
