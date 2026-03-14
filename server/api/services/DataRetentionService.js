@@ -11,11 +11,11 @@ const DataRetentionService = {
       await client.connect();
 
       await client.query(
-        `SELECT aggregate_to_5min(NOW() - ($1 * INTERVAL '1 hour'), NOW())`,
+        `SELECT aggregate_to_5min((NOW() - ($1 * INTERVAL '1 hour'))::timestamp, NOW()::timestamp)`,
         [windowHours]
       );
       await client.query(
-        `SELECT aggregate_to_hourly(NOW() - ($1 * INTERVAL '1 hour'), NOW())`,
+        `SELECT aggregate_to_hourly((NOW() - ($1 * INTERVAL '1 hour'))::timestamp, NOW()::timestamp)`,
         [windowHours]
       );
 
