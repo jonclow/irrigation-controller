@@ -10,6 +10,7 @@ const { createTerminus } = require('@godaddy/terminus');
 const ValveService = require('./api/services/ValveService');
 const ScheduleService = require('./api/services/ScheduleService');
 const WeatherService = require('./api/services/WeatherService');
+const DataRetentionService = require('./api/services/DataRetentionService');
 const SerialPortManager = require('./utils/serialPortManager');
 const _ = require("lodash");
 
@@ -102,6 +103,20 @@ cron.schedule('* * * * *', () => ScheduleService.scheduleCheckAndRun(app));
 cron.schedule('* * * * *', () => {
   serialPortManager.performHealthCheck();
 });
+
+// Hourly rolling aggregation: raw → 5-min and hourly aggregate tables
+// Runs at :00 each hour with a 2-hour overlap window; ON CONFLICT DO NOTHING prevents dupes
+cron.schedule('0 * * * *', () => DataRetentionService.aggregateReadings());
+
+// Daily at 3:05 AM: purge raw readings older than 90 days (1 quarter retention)
+cron.schedule('5 3 * * *', () => DataRetentionService.purgeOldReadings());
+
+// Hourly weather aggregation: raw → weather_hourly table
+// Runs at :10 past each hour (staggered from IAQ :00); 2h overlap window, ON CONFLICT DO NOTHING
+cron.schedule('10 * * * *', () => DataRetentionService.aggregateWeatherReadings());
+
+// Daily at 3:15 AM: purge raw weather older than 1 year (seasonal retention)
+cron.schedule('15 3 * * *', () => DataRetentionService.purgeOldWeatherReadings());
 
 const port = process.env.LISTEN_PORT;
 
