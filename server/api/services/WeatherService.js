@@ -108,18 +108,18 @@ const WeatherService = {
           WHERE dtg >= NOW() - INTERVAL '1 hour'
         `),
         client.query(`
-          SELECT ROUND(SUM(rain)::numeric, 1) AS rain24
-          FROM weather
+          SELECT ROUND(SUM(rain_total)::numeric, 1) AS rain24
+          FROM weather_hourly
           WHERE dtg >= NOW() - INTERVAL '24 hour'
         `),
         client.query(`
-          SELECT ROUND(SUM(rain)::numeric, 1) AS rain48
-          FROM weather
+          SELECT ROUND(SUM(rain_total)::numeric, 1) AS rain48
+          FROM weather_hourly
           WHERE dtg >= NOW() - INTERVAL '48 hour'
         `),
         client.query(`
-          SELECT ROUND(SUM(rain)::numeric, 1) AS rainWeek
-          FROM weather
+          SELECT ROUND(SUM(rain_total)::numeric, 1) AS rainWeek
+          FROM weather_hourly
           WHERE dtg >= NOW() - INTERVAL '1 week'
         `),
         baseWx(client)
@@ -342,8 +342,9 @@ const WeatherService = {
       await client.connect();
 
       const { rows: rain_data } = await client.query(`
-        SELECT ROUND(SUM(rain)::numeric, 1) as total_rain, TO_CHAR(DATE_TRUNC('day', dtg) AT TIME ZONE 'pacific/auckland', 'Mon DD') rain_day
-        FROM weather
+        SELECT ROUND(SUM(rain_total)::numeric, 1) AS total_rain,
+               TO_CHAR(DATE_TRUNC('day', dtg) AT TIME ZONE 'pacific/auckland', 'Mon DD') AS rain_day
+        FROM weather_hourly
         WHERE dtg >= NOW() - INTERVAL '1 month'
         GROUP BY DATE_TRUNC('day', dtg)
         ORDER BY rain_day ASC

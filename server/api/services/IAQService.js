@@ -44,12 +44,29 @@ const IAQService = {
     try {
       await client.connect();
 
-      const result = await client.query(`
-        SELECT
-          timestamp,
+      let table, cols;
+      if (hours <= 12) {
+        table = 'environmental_readings';
+        cols = `timestamp,
           TO_CHAR(timestamp AT TIME ZONE 'pacific/auckland', 'DD Mon HH24:MI') AS date_time,
-          co2_ppm, iaq, pm2_5, sht41_temp_c, sht41_humidity_rh
-        FROM environmental_readings
+          co2_ppm, iaq, pm2_5, sht41_temp_c, sht41_humidity_rh`;
+      } else if (hours <= 168) {
+        table = 'environmental_readings_5min';
+        cols = `timestamp,
+          TO_CHAR(timestamp AT TIME ZONE 'pacific/auckland', 'DD Mon HH24:MI') AS date_time,
+          co2_ppm_avg AS co2_ppm, iaq_avg AS iaq, pm2_5_avg AS pm2_5,
+          sht41_temp_avg AS sht41_temp_c, sht41_humidity_avg AS sht41_humidity_rh`;
+      } else {
+        table = 'environmental_readings_hourly';
+        cols = `timestamp,
+          TO_CHAR(timestamp AT TIME ZONE 'pacific/auckland', 'DD Mon HH24:MI') AS date_time,
+          co2_ppm_avg AS co2_ppm, iaq_avg AS iaq, pm2_5_avg AS pm2_5,
+          sht41_temp_avg AS sht41_temp_c, sht41_humidity_avg AS sht41_humidity_rh`;
+      }
+
+      const result = await client.query(`
+        SELECT ${cols}
+        FROM ${table}
         WHERE timestamp >= NOW() - ($1::int * INTERVAL '1 hour')
         ORDER BY timestamp ASC
       `, [hours]);
