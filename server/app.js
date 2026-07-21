@@ -50,6 +50,38 @@ app.use('/valve', require('./api/routes/valveRouter'));
 app.use('/weather', require('./api/routes/weatherRouter'));
 app.use('/iaq', require('./api/routes/iaqRouter'));
 
+// Health/readiness probe for external monitoring (Hermes 20-min synthetic + daily triage).
+// Always returns 200 when the process can answer, so a monitor can distinguish "backend down"
+// (timeout / no response) from "backend up but a dependency is degraded" (200 with a flag set).
+// Read-only: getStatus() has no side effects and the DB check is a single `SELECT 1`.
+app.get('/health', async (req, res) => {
+  const spm = req.app.get('serialPortManager');
+  const serial = (spm && typeof spm.getStatus === 'function')
+    ? spm.getStatus()
+    : { connected: false };
+
+  let db = { reachable: false };
+  const { Client } = require('pg');
+  const client = new Client({ connectionTimeoutMillis: 3000 }); // host/user/etc. from PG* env
+  try {
+    await client.connect();
+    await client.query('SELECT 1');
+    db = { reachable: true };
+  } catch (err) {
+    db = { reachable: false, error: err.code || err.message };
+  } finally {
+    try { await client.end(); } catch (_) { /* already down */ }
+  }
+
+  res.status(200).json({
+    status: 'ok',
+    uptime_s: Math.round(process.uptime()),
+    serial: { connected: !!serial.connected, reconnecting: !!serial.reconnecting },
+    db,
+    ts: new Date().toISOString()
+  });
+});
+
 app.set('valve_state', ValveService.initValveControl());
 app.set('socket', socket);
 app.set('serialPortManager', serialPortManager);
