@@ -2,7 +2,28 @@
 
 Smart irrigation system with web-based control interface, automated scheduling, and weather integration.
 
-## Architecture
+## ⚠️ Architecture below is STALE — frontend moved off the NAS 2026-07-20
+
+Everything under "Frontend (NAS)" / "NAS Deployment Files" / "NAS (Frontend)" setup below describes
+the **pre-2026-07-20 deployment**. The frontend now runs on **macmini (192.168.20.30)**: nginx
+(systemd) → docker `irrigation-frontend` on `127.0.0.1:3000`, pulling source from GitHub via a
+read-only deploy key. **Authoritative current doc: `~/code/hermes-agent/REFERENCE.md` §11.1.**
+
+**Cleanup note (2026-08-25):** the NAS-side nginx instance documented below (`start-nginx.sh` /
+`stop-nginx.sh`, config at `/volume1/home/jonclow/irrigation/nginx.conf`) was never actually
+decommissioned when the frontend moved — it kept running for over a month, proxying to a dead
+`localhost:3000` (nothing there since the container moved to macmini), returning 502s to anyone
+hitting the NAS on port 80. Worse, the `@reboot` cron entry from step 4 below respawned it on
+every NAS reboot, which is exactly what happened after the 2026-08-23 UPS/power-cut incident — it
+silently squatted on port 80 for ~36h, which is *part of* (not the whole cause of) why ADM's web
+GUI looked unreachable during that window (ADM itself actually lives on non-default ports
+8013/8014 — see `hermes-agent/REFERENCE.md` §15). **Fixed 2026-08-25:** ran
+`sudo ./stop-nginx.sh` on the NAS and removed the `@reboot` line from root's crontab. The files
+below (`nginx.conf`, `start-nginx.sh`, `stop-nginx.sh`) are left in place on the NAS as a historical
+record but should **not** be restarted — this section of the README is being kept for that
+history, not as current instructions. Do not re-add the `@reboot` cron entry.
+
+## Architecture (historical — see notice above)
 
 **Split Deployment:**
 - **Frontend (NAS):** React Router 7 SSR in Docker container, proxied via custom nginx
@@ -12,7 +33,7 @@ Smart irrigation system with web-based control interface, automated scheduling, 
 Browser → Nginx (NAS:80) → Docker (localhost:3000) → API (Pi:3001) → Hardware
 ```
 
-### Frontend - Asustor NAS (192.168.20.92)
+### Frontend - Asustor NAS (192.168.20.92) — DECOMMISSIONED 2026-07-20/cleaned up 2026-08-25
 - **Stack:** React 19 + React Router 7 (SSR) + Recharts + Socket.IO Client
 - **Deployment:** Docker container (irrigation-frontend)
 - **Reverse Proxy:** Custom nginx instance on NAS host
@@ -26,6 +47,15 @@ Browser → Nginx (NAS:80) → Docker (localhost:3000) → API (Pi:3001) → Har
 - **Location:** `~/irrigation-controller/`
 - **Hardware:** Serial port control for 5-zone valve system
 - **Access:** `http://192.168.20.59:3001/`
+- **Logging (added 2026-08-25):** `start-systemd.sh` now tees the Node process's stdout/stderr
+  through journald in addition to the local `logs/api.log` (previously the local file was the
+  *only* copy and got truncated — not appended — on every restart, which lost the actual crash
+  reason during the 2026-08-23 NAS-outage crash-loop). `rsyslog` on the Pi forwards everything to
+  the NAS syslog server (same collector the EdgeRouter/UniFi use), `imuxsock` only — do **not**
+  add the `imjournal` module without `IgnorePreviousMessages="on"`, it replays the entire journal
+  history on first run (blasted ~300K junk rows at the NAS in under a minute, 2026-08-25, before
+  being caught). Full detail and the Hermes-side query/monitor integration:
+  `~/code/hermes-agent/REFERENCE.md` §11.3.
 
 ## NAS Deployment Files
 
