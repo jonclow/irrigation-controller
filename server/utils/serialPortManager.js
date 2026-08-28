@@ -68,6 +68,10 @@ class SerialPortManager {
       console.log(chalk.yellow('Serial Port Open'));
       this.reconnectAttempts = 0; // Reset backoff counter on successful connection
       this.isReconnecting = false;
+      if (this.reconnectTimer) {
+        clearTimeout(this.reconnectTimer);
+        this.reconnectTimer = null;
+      }
 
       // Notify frontend of connection status
       if (this.socket) {
@@ -79,6 +83,11 @@ class SerialPortManager {
       console.error(chalk.red('SerialPort Error:'), err.message);
       if (this.socket) {
         this.socket.emit('serial-status', { connected: false, error: err.message });
+      }
+      // An open() that failed (device not present yet) emits 'error' without a
+      // matching 'close', so nothing else would retry. Schedule one here.
+      if (!port.isOpen) {
+        this.attemptReconnection();
       }
     });
 
@@ -99,83 +108,66 @@ class SerialPortManager {
   }
 
   /**
-   * Attempts to reconnect to serial port with exponential backoff
+   * Attempts to reconnect to serial port with exponential backoff.
+   *
+   * A pending `reconnectTimer` is the single source of truth for "a retry is
+   * already scheduled". It is always nulled the instant the timer fires, so no
+   * combination of flags can permanently block a reconnection (the bug that
+   * previously wedged the backend whenever the weather-station Uno was reset:
+   * `isReconnecting` was set and never cleared, and `recreateSerialConnection()`
+   * bailed out on `isReconnecting && reconnectTimer` forever).
    */
   attemptReconnection() {
-    if (this.isReconnecting) {
-      console.log(chalk.yellow('Reconnection already in progress, skipping...'));
+    if (this.reconnectTimer) {
+      // A retry is already queued; let it run.
       return;
     }
 
     this.isReconnecting = true;
     const delay = Math.min(1000 * Math.pow(2, this.reconnectAttempts), this.maxReconnectDelay);
-
     console.log(chalk.yellow(`Reconnecting in ${delay}ms (attempt ${this.reconnectAttempts + 1})...`));
 
-    if (this.reconnectTimer) {
-      clearTimeout(this.reconnectTimer);
-    }
-
     this.reconnectTimer = setTimeout(() => {
-      try {
-        console.log(chalk.blue('Attempting serial port reconnection...'));
-
-        // Close existing port if still open
-        if (this.serialPort && this.serialPort.isOpen) {
-          this.serialPort.close((err) => {
-            if (err) console.error('Error closing port:', err.message);
-            this.recreateSerialConnection();
-          });
-        } else {
-          this.recreateSerialConnection();
-        }
-      } catch (err) {
-        console.error(chalk.red('Reconnection failed:'), err.message);
-        this.reconnectAttempts++;
-        this.isReconnecting = false;
-
-        // Retry with increased backoff
-        if (this.reconnectAttempts < 10) { // Max 10 attempts before logging warning
-          this.attemptReconnection();
-        } else {
-          console.error(chalk.red('⚠️ Max reconnection attempts reached. Will retry via health check.'));
-          this.reconnectAttempts = 5; // Reset to moderate backoff for health check retries
-          this.isReconnecting = false;
-        }
-      }
+      this.reconnectTimer = null; // this timer has fired; a new one may now be queued
+      this.recreateSerialConnection();
     }, delay);
   }
 
   /**
-   * Recreates serial port and parser connections
+   * Tears down the old port/parser and creates a fresh pair. Never returns early:
+   * success is signalled asynchronously by the 'open' handler (which clears
+   * isReconnecting and resets the backoff); failure surfaces via 'error'/'close'
+   * or the synchronous catch below, both of which queue another attempt.
    */
   recreateSerialConnection() {
-    // Guard against simultaneous recreation attempts
-    if (this.isReconnecting && this.reconnectTimer) {
-      console.log(chalk.yellow('Recreation already scheduled, skipping duplicate attempt'));
-      return;
+    this.reconnectAttempts++;
+
+    // Drop listeners on the stale port/parser so handlers don't stack up across
+    // repeated reconnects (each cycle would otherwise add another 'data' etc.).
+    if (this.serialPort) {
+      try {
+        this.serialPort.removeAllListeners();
+        if (this.serialPort.isOpen) this.serialPort.close(() => {});
+      } catch (err) {
+        console.error(chalk.yellow('Error tearing down old serial port:'), err.message);
+      }
+    }
+    if (this.parser) {
+      try { this.parser.removeAllListeners(); } catch (err) { /* noop */ }
     }
 
     try {
-      // Create new serial port
       this.serialPort = this.createSerialPort();
-
-      // Create new parser
       this.parser = this.serialPort.pipe(new ReadlineParser({ delimiter: '\r\n' }));
 
       if (this.onDataCallback) {
         this.parser.on('data', this.onDataCallback);
       }
 
-      // Setup event handlers
       this.setupSerialHandlers(this.serialPort);
-
-      this.reconnectAttempts++;
-      console.log(chalk.green('Serial port recreated successfully'));
+      console.log(chalk.green('Serial port re-created; waiting for open event'));
     } catch (err) {
       console.error(chalk.red('Failed to recreate serial port:'), err.message);
-      this.reconnectAttempts++;
-      this.isReconnecting = false;
       this.attemptReconnection();
     }
   }
@@ -228,17 +220,20 @@ class SerialPortManager {
   performHealthCheck() {
     const status = this.healthCheck();
 
-    if (this.serialPort && !this.serialPort.isOpen && !this.isReconnecting) {
-      console.log(chalk.yellow('⚠️ Health check detected closed serial port - initiating reconnection'));
-      this.attemptReconnection();
-    } else if (!this.serialPort && !this.isReconnecting) {
-      console.log(chalk.red('⚠️ Health check found null serial port - recreating'));
-      this.attemptReconnection();
-    } else if (this.isReconnecting) {
-      console.log(chalk.blue(`ℹ️ Health check: Reconnection in progress (attempt ${this.reconnectAttempts + 1})`));
-    } else if (status.connected) {
+    if (status.connected) {
       console.log(chalk.green('✓ Health check: Serial port connected'));
+      return;
     }
+
+    if (this.reconnectTimer) {
+      console.log(chalk.blue(`ℹ️ Health check: reconnect pending (attempt ${this.reconnectAttempts + 1})`));
+      return;
+    }
+
+    // Port is not open and nothing is queued to fix it — re-arm. This is the
+    // safety net that recovers from any missed 'close'/'error' edge.
+    console.log(chalk.yellow('⚠️ Health check: serial port down with no retry pending - reconnecting'));
+    this.attemptReconnection();
   }
 
   /**
