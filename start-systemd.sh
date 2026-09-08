@@ -33,7 +33,10 @@ trap cleanup SIGTERM SIGINT
 
 # Start API server in background
 echo "Starting API server (port 3001)..."
-node server/app.js > logs/api.log 2>&1 &
+# tee so stdout/stderr land in BOTH the journal (systemd captures this script's
+# stdout) and logs/api.log — the daily triage greps api.log, journalctl is for
+# live tailing. Deployed on the Pi since 2026-08-25; committed here 2026-09-08.
+node server/app.js > >(tee -a logs/api.log) 2>&1 &
 API_PID=$!
 echo "API server started (PID: $API_PID)"
 
