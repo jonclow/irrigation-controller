@@ -29,6 +29,19 @@ class DatabaseErrorTracker {
    * Returns true if system should exit (persistent failure detected)
    */
   recordFailure(operationName, operationType, error) {
+    // A PostgreSQL integrity-constraint violation (SQLSTATE class 23 — CHECK such as
+    // valid_co2, NOT NULL, unique, FK) means the database is healthy and correctly
+    // rejecting one bad row, almost always malformed sensor input. That is not a
+    // persistent-outage signal, so it must never trigger a process exit: don't count
+    // it toward the threshold. The caller still throws, so the request gets an error
+    // response and the bad reading is dropped.
+    if (typeof error.code === 'string' && error.code.startsWith('23')) {
+      console.error(chalk.yellow(
+        `[DB Reject] ${operationName}: ${error.message} (SQLSTATE ${error.code}) — bad data dropped, not counted as a failure`
+      ));
+      return false;
+    }
+
     const currentFailures = (this.failures.get(operationName) || 0) + 1;
     this.failures.set(operationName, currentFailures);
 
