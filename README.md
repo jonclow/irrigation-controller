@@ -112,6 +112,13 @@ sudo systemctl enable irrigation
 sudo systemctl start irrigation
 ```
 
+**OS updates (since 2026-10-25):** `unattended-upgrades` installs Debian security/updates and
+Raspberry Pi archive packages (kernel, firmware) daily, but **never reboots**
+(`/etc/apt/apt.conf.d/52irrigation-unattended`). `GET /health` reports `reboot.required` when a
+newer kernel is installed than the one running (Pi OS kernels don't create
+`/var/run/reboot-required`), and Hermes Signals when it flips. Apply it by hand outside a watering
+slot with `ssh irrigation 'sudo reboot'`, then check `/health` and a manual valve run.
+
 ## Daily Operations
 
 ### Deploy Frontend Updates
