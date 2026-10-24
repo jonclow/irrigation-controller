@@ -12,6 +12,7 @@ const ScheduleService = require('./api/services/ScheduleService');
 const WeatherService = require('./api/services/WeatherService');
 const DataRetentionService = require('./api/services/DataRetentionService');
 const SerialPortManager = require('./utils/serialPortManager');
+const { getRebootStatus } = require('./utils/rebootStatus');
 const _ = require("lodash");
 
 const app = express();
@@ -78,6 +79,7 @@ app.get('/health', async (req, res) => {
     uptime_s: Math.round(process.uptime()),
     serial: { connected: !!serial.connected, reconnecting: !!serial.reconnecting },
     db,
+    reboot: getRebootStatus(),
     ts: new Date().toISOString()
   });
 });
