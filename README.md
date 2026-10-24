@@ -118,7 +118,8 @@ Raspberry Pi archive packages (kernel, firmware) daily, but **never reboots**
 newer kernel is installed than the one running (Pi OS kernels don't create
 `/var/run/reboot-required`), and Hermes Signals when it flips. Apply it by sending
 `/reboot_irrigation` to Hermes on Signal (admin-only, needs `/approve`). That runs
-`/usr/local/sbin/irrigation-safe-reboot` on the Pi through a forced-command SSH key, which **refuses**
+`/usr/local/sbin/irrigation-safe-reboot` on the Pi (source: `irrigation-safe-reboot` in this repo,
+install steps in its header) through a forced-command SSH key, which **refuses**
 while any valve is open (manual or scheduled), when an active schedule starts within 10 minutes, or
 when the backend can't be asked; Hermes reports back once the Pi is up again (details:
 `hermes-agent/REFERENCE.md` §7.6). If the backend is down, reboot by hand: `ssh irrigation 'sudo reboot'`.

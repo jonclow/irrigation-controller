@@ -1,0 +1,72 @@
+#!/usr/bin/python3 -I
+# irrigation-safe-reboot — the ONLY thing the Hermes "reboot_irrigation" SSH key can run.
+# Installed root-owned at /usr/local/sbin/ and reached via a forced command in ~jon/.ssh/
+# authorized_keys (from="192.168.20.30"). Takes no arguments; SSH_ORIGINAL_COMMAND is ignored.
+#
+# Refuses (exit 1, reason on stdout) unless it can PROVE it's safe, asking the running backend:
+#   * any valve open    -> refuse. A schedule run is just valves opened with a turn-off timer,
+#                          so this covers both a running schedule and a manual trigger.
+#   * an active schedule due to start within GUARD_MINUTES -> refuse. A schedule only fires
+#                          on its exact HH:MM minute, so one due mid-reboot would be skipped.
+#   * backend not answering / unparseable -> refuse (fail closed — reboot by hand if sure).
+# Otherwise schedules a reboot a few seconds out (so this reply gets back) and exits 0.
+#
+# Install / update on the Pi (deploy-pi-backend.sh does NOT do this — it stays root-owned on purpose,
+# so a git pull can never change what the key runs):
+#   sudo install -o root -g root -m 0755 ~/irrigation-controller/irrigation-safe-reboot /usr/local/sbin/
+# Caller side lives on macmini: hermes-agent REFERENCE.md §7.6 (/reboot_irrigation).
+import json
+import subprocess
+import sys
+import urllib.request
+from datetime import datetime, timedelta
+
+API = "http://127.0.0.1:3001"
+GUARD_MINUTES = 10
+
+
+def get(path):
+    with urllib.request.urlopen(API + path, timeout=5) as r:
+        return json.load(r)
+
+
+def refuse(msg):
+    subprocess.run(["/usr/bin/logger", "-t", "irrigation-safe-reboot", "REFUSED: " + msg])
+    print("REFUSED: " + msg)
+    sys.exit(1)
+
+
+try:
+    valves = get("/valve/getValveState")
+    schedules = get("/schedule/getAllSchedules")
+    health = get("/health")
+except Exception as exc:
+    refuse(f"can't confirm valve state - backend not answering ({exc}). "
+           "If you're sure nothing is watering, reboot by hand: ssh irrigation 'sudo reboot'")
+
+if not isinstance(valves, list) or not isinstance(schedules, list):
+    refuse("unexpected response from the backend; not rebooting blind.")
+
+open_valves = [v.get("name", f"#{v.get('id')}") for v in valves if v.get("status") != 1]
+if open_valves:
+    refuse("watering in progress - valve(s) open: " + ", ".join(open_valves) + ".")
+
+now = datetime.now().replace(second=0, microsecond=0)
+for m in range(GUARD_MINUTES + 1):
+    t = now + timedelta(minutes=m)
+    js_day = (t.weekday() + 1) % 7  # JS getDay(): Sunday=0, matches ScheduleService
+    for s in schedules:
+        if s.get("active") and js_day in (s.get("days") or []) and s.get("start") == t.strftime("%H:%M"):
+            refuse(f"schedule '{str(s.get('name')).strip()}' starts at {s['start']}; "
+                   "try again after it has run.")
+
+reboot = health.get("reboot") or {}
+if reboot.get("required"):
+    reason = f"kernel {reboot.get('installed_kernel')} pending (running {reboot.get('running_kernel')})"
+else:
+    reason = f"manual request, no reboot pending (kernel {reboot.get('running_kernel', '?')})"
+
+subprocess.run(["/usr/bin/logger", "-t", "irrigation-safe-reboot", "REBOOTING: " + reason])
+subprocess.run(["/usr/bin/systemd-run", "--quiet", "--on-active=5",
+                "--unit=irrigation-safe-reboot", "/usr/bin/systemctl", "reboot"], check=True)
+print("OK: all valves closed, no schedule due - rebooting in 5s (" + reason + ").")
